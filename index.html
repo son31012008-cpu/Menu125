@@ -6,126 +6,358 @@
   <title>Menu Tân Niên Ý - Tết 2025</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* ========== CSS CHUYÊN NGHIỆP + HIỆU ỨNG TẾT ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #8B0000, #DC143C);
-      min-height: 100vh;
       overflow-x: hidden;
     }
     
-    /* FORM CHỌN BÀN */
+    /* NỀN TẾT KẾT HỢP HOẠ TIẾT */
+    .tet-background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FF6347 100%);
+      z-index: -3;
+    }
+    
+    /* HOẠ TIẾT MINI HOẠ TRÊN NỀN */
+    .tet-background::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: 
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,20 Q40,5 60,20 T100,20 Q85,40 100,60 T100,100 Q60,85 20,100 T0,100 Q5,60 0,20 T20,20" fill="rgba(255,215,0,0.05)"/></svg>'),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="1.5" fill="rgba(255,215,0,0.1)"/><circle cx="30" cy="70" r="1" fill="rgba(255,215,0,0.1)"/><circle cx="85" cy="40" r="1.2" fill="rgba(255,215,0,0.1)"/></svg>');
+      background-size: 150px 150px, 100px 100px;
+      animation: patternMove 20s linear infinite;
+    }
+    
+    @keyframes patternMove {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 150px 150px, 100px 100px; }
+    }
+    
+    /* HOA RƠI ĐỘNG */
+    .flower-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .flower {
+      position: absolute;
+      font-size: 24px;
+      animation: fall linear infinite;
+      opacity: 0.8;
+    }
+    
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    /* VÒ RƯỢU ĐỔ XUỐNG TÊN QUÁN */
+    .wine-pour {
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 120px;
+      z-index: 10;
+      animation: pour 4s ease-in-out infinite;
+    }
+    
+    .wine-bottle {
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(to bottom, #8B4513 0%, #A0522D 50%, #654321 100%);
+      border-radius: 10px 10px 5px 5px;
+      position: relative;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+    
+    .wine-bottle::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 22px;
+      background: #8B4513;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    .wine-stream {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 60px;
+      background: linear-gradient(to bottom, #FFD700 0%, #FFA500 50%, transparent 100%);
+      border-radius: 2px;
+      animation: stream 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
+    }
+    
+    @keyframes pour {
+      0%, 100% { transform: translateX(-50%) rotate(0deg); }
+      25% { transform: translateX(-50%) rotate(-15deg); }
+      75% { transform: translateX(-50%) rotate(-10deg); }
+    }
+    
+    @keyframes stream {
+      0%, 100% { opacity: 0; height: 0; }
+      25% { opacity: 0.8; height: 40px; }
+      75% { opacity: 1; height: 60px; }
+      90% { opacity: 0.5; height: 50px; }
+    }
+    
+    /* PHẦN CHỌN BÀN */
     .auth-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: linear-gradient(135deg, rgba(139,0,0,0.8), rgba(220,20,60,0.8));
+      z-index: 1000;
+      backdrop-filter: blur(5px);
     }
+    
     .auth-box {
       background: white;
-      padding: 50px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      padding: 50px 40px;
+      border-radius: 25px;
       text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       min-width: 400px;
+      position: relative;
+      overflow: hidden;
     }
-    .auth-box h1 { color: #8B0000; font-size: 36px; margin-bottom: 20px; }
+    
+    .auth-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 5px;
+      background: linear-gradient(90deg, #FFD700, #FF6347);
+    }
+    
+    .auth-box h1 {
+      font-size: 36px;
+      color: #8B0000;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .auth-box p {
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    
     .auth-box select {
       width: 100%;
       padding: 15px;
       font-size: 18px;
       border: 2px solid #FFD700;
       border-radius: 10px;
-      margin: 20px 0;
+      margin-bottom: 25px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
     }
+    
+    .auth-box select:focus {
+      outline: none;
+      border-color: #FF6347;
+      box-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+    
     #startBtn {
       padding: 15px 40px;
       font-size: 20px;
       background: linear-gradient(45deg, #FFD700, #FF6347);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 25px;
       cursor: pointer;
       font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
     
-    /* MENU */
-    .header { text-align: center; padding: 20px; }
-    .restaurant-name { font-size: 48px; color: #FFD700; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); }
-    .customer-info {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      z-index: 1000;
+    #startBtn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
-    .menu-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-    .category-title { font-size: 28px; color: #FFD700; text-align: center; margin: 30px 0 20px; }
-    .food-grid { display: flex; justify-content: center; gap: 20px; }
-    .food-card {
-      background: white;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-      width: 350px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    .food-card:hover { transform: translateY(-5px); }
-    .food-name { font-size: 24px; font-weight: bold; color: #8B0000; margin-bottom: 10px; }
-    .food-description { font-size: 16px; color: #666; margin-bottom: 15px; }
-    .food-price { font-size: 22px; font-weight: bold; color: #FF6347; margin-bottom: 15px; }
     
-    /* SAO CHÍNH XÁC THEO DỮ LIỆU */
-    .rating-container {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 18px;
+    /* PHẦN MENU SAU KHI CHỌN BÀN */
+    .main-content {
+      display: none;
     }
-    .star-rating {
+    
+    .header {
+      text-align: center;
+      padding: 40px 20px 30px;
+      position: relative;
+    }
+    
+    .restaurant-name {
+      font-size: 72px;
+      font-weight: bold;
+      color: #FFD700;
+      text-shadow: 4px 4px 8px rgba(0,0,0,0.8), 0 0 20px #FFD700;
       position: relative;
       display: inline-block;
-      color: #ddd;
-      width: 18px;
-      height: 18px;
+      animation: glow 3s ease-in-out infinite alternate;
     }
-    .star-rating::before {
-      content: '★';
-      position: absolute;
-      left: 0;
-      top: 0;
+    
+    @keyframes glow {
+      from { text-shadow: 4px 4px 8px rgba(0,0,0,0.8), 0 0 20px #FFD700; }
+      to { text-shadow: 4px 4px 8px rgba(0,0,0,0.8), 0 0 40px #FFD700, 0 0 60px #FFD700; }
+    }
+    
+    .customer-info {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    .menu-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .category-title {
+      font-size: 32px;
       color: #FFD700;
+      text-align: center;
+      margin: 30px 0 25px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .food-grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .food-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.4s ease;
+      border: 3px solid transparent;
+      position: relative;
       overflow: hidden;
     }
-    .star-100::before { width: 100%; }
-    .star-80::before { width: 80%; }
-    .star-60::before { width: 60%; }
-    .star-40::before { width: 40%; }
-    .star-20::before { width: 20%; }
-    .star-0::before { width: 0%; }
+    
+    .food-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+      transition: left 0.5s;
+    }
+    
+    .food-card:hover::before {
+      left: 100%;
+    }
+    
+    .food-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      border-color: #FFD700;
+    }
+    
+    .food-info h3 {
+      font-size: 26px;
+      font-weight: bold;
+      color: #8B0000;
+      margin-bottom: 12px;
+    }
+    
+    .food-info p {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    
+    .food-price {
+      font-size: 24px;
+      font-weight: bold;
+      color: #FF6347;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .rating-display {
+      font-size: 18px;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #FFD700;
+    }
     
     /* GIỎ HÀNG FLOATING */
     .cart-float {
       position: fixed;
       bottom: 30px;
       right: 30px;
-      width: 60px;
-      height: 60px;
-      background: #FFD700;
+      width: 65px;
+      height: 65px;
+      background: linear-gradient(45deg, #FFD700, #FF6347);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s;
       z-index: 100;
     }
+    
+    .cart-float:hover {
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    
     #cartCount {
       position: absolute;
       top: -5px;
@@ -140,11 +372,30 @@
       justify-content: center;
       font-weight: bold;
       font-size: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .restaurant-name { font-size: 48px; }
+      .auth-box { min-width: 90%; padding: 30px 20px; }
+      .food-card { width: 90%; }
+      .food-grid { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <!-- CHỌN BÀN -->
+  <!-- NỀN HOẠ TIẾT VÀ HOA RƠI -->
+  <div class="tet-background"></div>
+  <div class="flower-container" id="flowerContainer"></div>
+
+  <!-- VÒ RƯỢU ĐỔ XUỐNG TÊN QUÁN -->
+  <div class="wine-pour">
+    <div class="wine-bottle"></div>
+    <div class="wine-stream"></div>
+  </div>
+
+  <!-- PHẦN CHỌN BÀN -->
   <div class="auth-container" id="authContainer">
     <div class="auth-box">
       <h1>🎊 TÂN NIÊN Ý</h1>
@@ -161,8 +412,8 @@
     </div>
   </div>
 
-  <!-- MENU -->
-  <div id="menuSection" style="display: none;">
+  <!-- PHẦN MENU CHÍNH -->
+  <div class="main-content" id="mainContent">
     <header class="header">
       <h1 class="restaurant-name">Tân Niên Ý</h1>
       <div class="customer-info" id="customerInfo"></div>
@@ -175,8 +426,8 @@
       </section>
     </div>
 
-    <!-- GIỎ HÀNG -->
-    <div class="cart-float" onclick="location.href='cart.html'">
+    <!-- GIỎ HÀNG FLOATING -->
+    <div class="cart-float" id="cartFloat" onclick="location.href='cart.html'">
       <span id="cartCount">0</span>
       <span style="font-size: 24px;">🛒</span>
     </div>
