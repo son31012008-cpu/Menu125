@@ -34,12 +34,12 @@ onSnapshot(foodRef, (doc) => {
       <input type="number" id="quantity" min="1" value="1">
       <button class="order-btn" id="addToCart">🛒 THÊM VÀO GIỎ</button>
     </div>
-  `;
+  `;)
   
   setupRating();
   loadStats();
   setupCart(food);
-});
+};
 
 let hasRated = false;
 const userRatingRef = doc(db, 'foodRatings', foodId, 'userRatings', customerId);
@@ -124,3 +124,4 @@ function setupCart(food) {
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
+
