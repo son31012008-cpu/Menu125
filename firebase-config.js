@@ -24,3 +24,46 @@ if (!customerId) {
 signInAnonymously(auth).catch(console.error);
 
 export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment };
+
+// ========== HÀM THÔNG BÁO TOAST - DÙNG CHUNG ==========
+function showToast(message, type = 'success', duration = 3000) {
+  const container = document.getElementById('toastContainer') || createToastContainer();
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type} toast-tet`;
+  
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+  
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type]}</div>
+    <div class="toast-content">
+      <div class="toast-title">Thông báo</div>
+      <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+  `;
+  
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.animation = 'slideOut 0.4s ease forwards';
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, duration);
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
+}
+
+// Xuất để các file khác có thể import
+export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, showToast };
