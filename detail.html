@@ -6,129 +6,156 @@
   <title>Chi tiết món ăn - Tân Niên Ý</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* ========== CSS CHUYÊN NGHIỆP CHO DETAIL ========== */
+    /* ========== CSS NÂNG CAO CHO DETAIL ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #8B0000, #DC143C);
+      background: linear-gradient(135deg, #8B0000 0%, #DC143C 40%, #FF6347 100%);
       min-height: 100vh;
       padding: 20px;
+      overflow-x: hidden;
     }
     
     .detail-container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 25px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
     }
     
     .detail-header {
       background: linear-gradient(45deg, #FFD700, #FF6347);
-      padding: 20px;
+      padding: 25px;
       color: white;
+      display: flex;
+      align-items: center;
+      gap: 20px;
     }
     
     .back-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: rgba(255,255,255,0.2);
-      border: 1px solid white;
+      border: 1px solid rgba(255,255,255,0.5);
       border-radius: 25px;
       color: white;
       text-decoration: none;
       font-weight: bold;
-      transition: all 0.3s;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
     .back-btn:hover {
       background: rgba(255,255,255,0.3);
-      transform: translateX(-5px);
+      transform: translateX(-8px) scale(1.05);
     }
     
     .detail-body {
-      padding: 40px;
+      padding: 50px;
     }
     
     /* THÔNG TIN MÓN */
     .food-info-section {
       text-align: center;
-      margin-bottom: 40px;
-      padding-bottom: 30px;
-      border-bottom: 2px solid #f0f0f0;
+      margin-bottom: 50px;
+      padding-bottom: 40px;
+      border-bottom: 2px solid rgba(255,215,0,0.3);
     }
     
     .food-icon {
-      font-size: 80px;
-      margin-bottom: 20px;
+      font-size: 100px;
+      margin-bottom: 25px;
+      display: block;
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
     }
     
     .food-detail-name {
-      font-size: 36px;
+      font-size: 42px;
       color: #8B0000;
-      font-weight: bold;
-      margin-bottom: 15px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      font-weight: 900;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      letter-spacing: -0.5px;
     }
     
     .food-detail-description {
-      font-size: 18px;
-      color: #666;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      font-size: 20px;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 25px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
     }
     
     .food-detail-price {
-      font-size: 32px;
+      font-size: 36px;
       color: #FF6347;
-      font-weight: bold;
-      background: linear-gradient(45deg, rgba(255,215,0,0.2), rgba(255,99,71,0.2));
+      font-weight: 900;
+      background: linear-gradient(45deg, rgba(255,215,0,0.25), rgba(255,99,71,0.25));
       display: inline-block;
-      padding: 10px 30px;
-      border-radius: 25px;
+      padding: 15px 40px;
+      border-radius: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
     /* ĐÁNH GIÁ */
     .rating-section {
-      background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,99,71,0.1));
-      padding: 30px;
-      border-radius: 20px;
-      margin-bottom: 30px;
-      border: 2px solid rgba(255,215,0,0.3);
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,99,71,0.15));
+      padding: 40px;
+      border-radius: 25px;
+      margin-bottom: 40px;
+      border: 2px solid rgba(255,215,0,0.4);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
     
     .rating-title {
-      font-size: 24px;
+      font-size: 28px;
       color: #8B0000;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-align: center;
+      font-weight: 700;
     }
     
     .stars-container {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 15px;
+      gap: 12px;
+      margin-bottom: 20px;
     }
     
     .star {
-      font-size: 40px;
+      font-size: 50px;
       cursor: pointer;
       color: #ddd;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-shadow: 0 0 5px rgba(0,0,0,0.1);
+      user-select: none;
     }
     
     .star:hover {
-      transform: scale(1.2);
-      color: #FFD700;
+      transform: scale(1.3) rotate(10deg);
+      color: rgba(255,215,0,0.8);
     }
     
     .star.active {
       color: #FFD700;
-      text-shadow: 0 0 15px #FFD700;
+      text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
+      animation: starPulse 1s ease-in-out infinite alternate;
+    }
+    
+    @keyframes starPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
     }
     
     .star:disabled {
@@ -137,114 +164,124 @@
     
     #ratingStatus {
       text-align: center;
-      font-size: 16px;
+      font-size: 18px;
       color: #666;
-      font-weight: bold;
-      margin-top: 10px;
+      font-weight: 600;
+      margin-top: 15px;
     }
     
     /* THỐNG KÊ */
     .stats-section {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 30px;
+      background: linear-gradient(135deg, rgba(139,0,0,0.05), rgba(220,20,60,0.05));
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      border: 2px solid rgba(255,215,0,0.3);
     }
     
     .stats-section h3 {
       color: #8B0000;
-      font-size: 20px;
-      margin-bottom: 15px;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
     }
     
     .stats-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      text-align: center;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
     }
     
     .stat-item {
       background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,215,0,0.3);
+      transition: transform 0.3s;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-5px);
     }
     
     .stat-value {
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 28px;
+      font-weight: 900;
       color: #FF6347;
+      display: block;
     }
     
     .stat-label {
-      font-size: 14px;
+      font-size: 16px;
       color: #666;
-      margin-top: 5px;
+      margin-top: 8px;
     }
     
     /* ĐẶT HÀNG */
     .order-section {
-      background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,99,71,0.1));
-      padding: 30px;
-      border-radius: 20px;
-      border: 2px solid rgba(255,215,0,0.3);
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,99,71,0.15));
+      padding: 40px;
+      border-radius: 25px;
+      border: 2px solid rgba(255,215,0,0.4);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
     
     .order-title {
-      font-size: 24px;
+      font-size: 28px;
       color: #8B0000;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-align: center;
+      font-weight: 700;
     }
     
     .quantity-control {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 20px;
+      margin-bottom: 25px;
     }
     
     .quantity-label {
-      font-size: 18px;
+      font-size: 20px;
       color: #666;
+      font-weight: 600;
     }
     
     #quantity {
-      width: 80px;
-      padding: 10px;
-      font-size: 18px;
+      width: 100px;
+      padding: 12px;
+      font-size: 20px;
       border: 2px solid #FFD700;
-      border-radius: 10px;
+      border-radius: 12px;
       text-align: center;
+      font-weight: bold;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
     
     .add-to-cart-btn {
       width: 100%;
-      padding: 18px;
-      font-size: 20px;
+      padding: 20px;
+      font-size: 24px;
       background: linear-gradient(45deg, #FFD700, #FF6347);
       color: white;
       border: none;
-      border-radius: 15px;
+      border-radius: 20px;
       cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+      font-weight: 900;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
     }
     
     .add-to-cart-btn:hover {
-      transform: scale(1.02);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
     }
     
     .add-to-cart-btn:active {
-      transform: scale(0.98);
+      transform: translateY(0) scale(0.98);
     }
     
     /* NỀN ĐỘNG */
@@ -252,14 +289,13 @@
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FF6347 100%);
       z-index: -2;
     }
     
     .flower {
       position: fixed;
       top: -20px;
-      font-size: 24px;
+      font-size: 30px;
       animation: fall linear infinite;
       pointer-events: none;
       z-index: -1;
@@ -270,48 +306,56 @@
         transform: translateY(100vh) rotate(360deg);
       }
     }
+    
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .detail-body {
+        padding: 30px;
+      }
+      
+      .food-detail-name {
+        font-size: 32px;
+      }
+      
+      .food-detail-price {
+        font-size: 28px;
+      }
+      
+      .star {
+        font-size: 40px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="cart-container" id="cartContainer">
-    <div class="cart-header">
-      <h1>🛒 GIỎ HÀNG CỦA BẠN</h1>
-      <div class="order-info">
-        <span class="table-number" id="tableNumber"></span>
-        <span>Khách: <span id="customerIdCart"></span></span>
-      </div>
-    </div>
-    
-    <div id="cartItems"></div>
-    
-    <div class="cart-total" id="cartTotal">
-      <h2>TỔNG ĐƠN HÀNG</h2>
-      <div class="total-amount" id="totalAmount">0đ</div>
-    </div>
-    
-    <button class="send-order-btn" id="placeOrder">📤 GỬI ĐƠN CHO BẾP</button>
-  </div>
+  <div class="tet-background"></div>
   
-  <div class="empty-cart" id="emptyCart" style="display: none;">
-    <h2>Giỏ hàng trống!</h2>
-    <p>Hãy thêm món ăn vào giỏ nhé</p>
-    <button onclick="location.href='index.html'">← QUAY LẠI MENU</button>
-  </div>
-
-  <!-- MODAL XÁC NHẬN - KHÔNG CÓ ONCLICK NỮA -->
-  <div class="modal-overlay" id="confirmModal">
-    <div class="confirm-modal">
-      <h3>📋 Xác nhận gửi đơn</h3>
-      <p>Bạn có chắc muốn gửi đơn này cho bếp?</p>
-      <div class="order-summary" id="orderSummary"></div>
-      <div class="modal-buttons">
-        <button class="btn-confirm">✅ Gửi đơn</button>
-        <button class="btn-cancel">❌ Hủy</button>
-      </div>
+  <div class="detail-container">
+    <div class="detail-header">
+      <a href="index.html" class="back-btn">← Quay lại</a>
+      <h2 style="margin: 0;">Chi tiết món ăn</h2>
+    </div>
+    
+    <div class="detail-body">
+      <div id="foodDetail"></div>
     </div>
   </div>
 
-  <script type="module" src="cart.js"></script>
+  <script>
+    // Thêm hiệu ứng hoa rơi (Tết)
+    const flowers = ['🌸', '🌺', '🌼', '🌷', '🌹'];
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => {
+        const flower = document.createElement('div');
+        flower.className = 'flower';
+        flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+        flower.style.left = Math.random() * 100 + '%';
+        flower.style.animationDuration = (Math.random() * 3 + 5) + 's';
+        flower.style.animationDelay = Math.random() * 2 + 's';
+        flower.style.opacity = Math.random() * 0.6 + 0.4;
+        document.body.appendChild(flower);
+      }, i * 500);
+    }
+  </script>
 </body>
 </html>
-
