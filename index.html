@@ -8,7 +8,47 @@
   <style>
     /* ========== CSS CHUYÊN NGHIỆP + HIỆU ỨNG TẾT ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
+  <!-- Container cho thông báo -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// HÀM THÔNG BÁO TÙY CHỈNH
+function showToast(message, type = 'success', duration = 3000) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type} toast-tet`;
+  
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+  
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type]}</div>
+    <div class="toast-content">
+      <div class="toast-title">Thông báo</div>
+      <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Tự động xoá sau duration
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.animation = 'slideOut 0.4s ease forwards';
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, duration);
+}
+
+// Export để sử dụng ở file khác
+window.showToast = showToast;
+</script>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow-x: hidden;
@@ -436,3 +476,4 @@
   <script type="module" src="main.js"></script>
 </body>
 </html>
+
