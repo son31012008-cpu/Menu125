@@ -121,6 +121,12 @@
       border-radius: 25px;
       cursor: pointer;
       font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    #startBtn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
     
     /* PHẦN MENU CHÍNH */
@@ -149,6 +155,7 @@
       padding: 10px 15px;
       border-radius: 20px;
       font-size: 14px;
+      z-index: 100;
     }
     
     .menu-container {
@@ -178,6 +185,8 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       cursor: pointer;
       transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
     }
     
     .food-card:hover {
@@ -189,12 +198,24 @@
       font-size: 26px;
       color: #8B0000;
       margin-bottom: 12px;
+      font-weight: bold;
+    }
+    
+    .food-description {
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.5;
     }
     
     .food-price {
       font-size: 24px;
       color: #FF6347;
       font-weight: bold;
+    }
+    
+    .rating-display {
+      margin-top: 10px;
+      font-size: 18px;
     }
     
     .cart-float {
@@ -210,6 +231,13 @@
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+      z-index: 100;
+    }
+    
+    .cart-float:hover {
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
     
     #cartCount {
@@ -227,9 +255,54 @@
       font-weight: bold;
       font-size: 12px;
     }
+
+    /* TOAST CONTAINER - THÊM VÀO ĐÂY */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+    }
+
+    .toast {
+      background: #333;
+      color: white;
+      padding: 15px 20px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast-success {
+      background: #4caf50;
+    }
+
+    .toast-error {
+      background: #f44336;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- TOAST CONTAINER - THÊM VÀO ĐÂY -->
+  <div class="toast-container" id="toastContainer"></div>
+
   <!-- NỀN HOẠ TIẾT VÀ HOA RƠI -->
   <div class="tet-background"></div>
   <div class="flower-container" id="flowerContainer"></div>
