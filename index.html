@@ -3,23 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu Tân Niên Ý - TEST</title>
+  <title>Menu Tân Niên Ý - Tết 2025</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="tet-background"></div>
   <div class="flower-container" id="flowerContainer"></div>
   
-  <header class="header">
-    <h1 class="restaurant-name">Tân Niên Ý</h1>
-    <div class="customer-id" id="customerId">Đang tải ID...</div>
-  </header>
+  <!-- PHẦN CHỌN BÀN -->
+  <div class="auth-container" id="authContainer">
+    <div class="auth-box">
+      <h1>🎊 TÂN NIÊN Ý</h1>
+      <p>Vui lòng chọn số bàn của bạn:</p>
+      <select id="tableSelect">
+        <option value="">-- Chọn bàn --</option>
+        <option value="B01">Bàn 01</option>
+        <option value="B02">Bàn 02</option>
+        <option value="B03">Bàn 03</option>
+        <option value="B04">Bàn 04</option>
+        <option value="B05">Bàn 05</option>
+      </select>
+      <button id="startBtn">BẮT ĐẦU GỌI MÓN</button>
+    </div>
+  </div>
 
-  <div class="menu-container">
-    <section class="category">
-      <h2 class="category-title"> MÓN TEST</h2>
-      <div class="food-grid" id="foodGrid"></div>
-    </section>
+  <!-- PHẦN MENU (ẨN KHI CHƯA CHỌN BÀN) -->
+  <div id="menuSection" style="display: none;">
+    <header class="header">
+      <h1 class="restaurant-name">Tân Niên Ý</h1>
+      <div class="customer-info" id="customerInfo"></div>
+    </header>
+
+    <div class="menu-container">
+      <section class="category">
+        <h2 class="category-title">🎯 MÓN ĐẶC BIỆT</h2>
+        <div class="food-grid" id="foodGrid"></div>
+      </section>
+    </div>
+
+    <!-- GIỎ HÀNG FLOATING -->
+    <div class="cart-float" id="cartFloat" onclick="location.href='cart.html'">
+      <span id="cartCount">0</span>
+      <span style="font-size: 24px;">🛒</span>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>
