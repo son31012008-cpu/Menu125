@@ -1,4 +1,3 @@
-// Import từ file firebase-config.js của bạn
 import { 
   db, doc, getDoc, updateDoc, 
   collection, query, where, orderBy, onSnapshot, limit, getDocs 
@@ -33,7 +32,7 @@ function setupTabEvents() {
 }
 
 // ============================================
-// LOAD ĐƠN HÀNG REALTIME
+// LOAD ĐƠN HÀNG REALTIME - 3 INDEXES
 // ============================================
 function loadOrders() {
   listenToPendingOrders();
@@ -154,7 +153,6 @@ function renderCompletedOrders(orders) {
 // HIỂN THỊ CHI TIẾT
 // ============================================
 window.showOrderDetail = function(orderId) {
-  // SỬA LỖI: Dùng getDoc trực tiếp thay vì query
   const orderRef = doc(db, 'orders', orderId);
   
   getDoc(orderRef).then(docSnap => {
@@ -246,9 +244,6 @@ window.closeDetailBox = function() {
   document.getElementById('orderDetailBox').classList.remove('show');
 }
 
-// ============================================
-// UPDATE STATUS
-// ============================================
 window.updateOrderStatus = function(orderId, status) {
   const orderRef = doc(db, 'orders', orderId);
   const updateData = { 
@@ -269,9 +264,6 @@ window.updateOrderStatus = function(orderId, status) {
   });
 }
 
-// ============================================
-// UPDATE BADGE
-// ============================================
 function updateBadge(status, count) {
   const badge = document.getElementById(`${status}-badge`);
   if (badge) {
@@ -280,9 +272,6 @@ function updateBadge(status, count) {
   }
 }
 
-// ============================================
-// HELPERS
-// ============================================
 function getStatusText(status) {
   const statuses = {
     pending: 'Đang chờ',
@@ -292,9 +281,6 @@ function getStatusText(status) {
   return statuses[status] || status;
 }
 
-// ============================================
-// SHOW TOAST
-// ============================================
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer') || (() => {
     const c = document.createElement('div');
