@@ -6,15 +6,15 @@
   <title>Menu Tân Niên Ý - Tết 2025</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* CSS BỔ SUNG CHO UI ĐẸP */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #8B0000, #DC143C);
       min-height: 100vh;
-      margin: 0;
-      padding: 0;
+      overflow-x: hidden;
     }
     
+    /* FORM CHỌN BÀN */
     .auth-container {
       display: flex;
       align-items: center;
@@ -22,49 +22,25 @@
       height: 100vh;
       background: linear-gradient(135deg, rgba(139,0,0,0.8), rgba(220,20,60,0.8));
     }
-    
     .auth-box {
       background: white;
-      padding: 50px 40px;
+      padding: 50px;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       text-align: center;
-      min-width: 350px;
+      min-width: 400px;
     }
-    
-    .auth-box h1 {
-      color: #8B0000;
-      font-size: 36px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-    
-    .auth-box p {
-      color: #666;
-      font-size: 18px;
-      margin-bottom: 30px;
-    }
-    
+    .auth-box h1 { color: #8B0000; font-size: 36px; margin-bottom: 20px; }
     .auth-box select {
       width: 100%;
       padding: 15px;
       font-size: 18px;
       border: 2px solid #FFD700;
       border-radius: 10px;
-      margin-bottom: 25px;
-      background: white;
-      cursor: pointer;
-      transition: border-color 0.3s;
+      margin: 20px 0;
     }
-    
-    .auth-box select:focus {
-      outline: none;
-      border-color: #FF6347;
-    }
-    
     #startBtn {
-      width: 100%;
-      padding: 15px;
+      padding: 15px 40px;
       font-size: 20px;
       background: linear-gradient(45deg, #FFD700, #FF6347);
       color: white;
@@ -72,28 +48,11 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
-      transition: transform 0.3s, box-shadow 0.3s;
     }
     
-    #startBtn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-    
-    /* PHẦN MENU */
-    .header {
-      text-align: center;
-      padding: 20px;
-      position: relative;
-    }
-    
-    .restaurant-name {
-      font-size: 48px;
-      color: #FFD700;
-      text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-      margin-bottom: 10px;
-    }
-    
+    /* MENU */
+    .header { text-align: center; padding: 20px; }
+    .restaurant-name { font-size: 48px; color: #FFD700; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); }
     .customer-info {
       position: fixed;
       top: 15px;
@@ -105,28 +64,9 @@
       font-size: 14px;
       z-index: 1000;
     }
-    
-    .menu-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .category-title {
-      font-size: 28px;
-      color: #FFD700;
-      text-align: center;
-      margin: 30px 0 20px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    }
-    
-    .food-grid {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    
+    .menu-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .category-title { font-size: 28px; color: #FFD700; text-align: center; margin: 30px 0 20px; }
+    .food-grid { display: flex; justify-content: center; gap: 20px; }
     .food-card {
       background: white;
       border-radius: 15px;
@@ -134,51 +74,27 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.2);
       width: 350px;
       cursor: pointer;
-      transition: transform 0.3s, box-shadow 0.3s;
+      transition: transform 0.3s;
     }
+    .food-card:hover { transform: translateY(-5px); }
+    .food-name { font-size: 24px; font-weight: bold; color: #8B0000; margin-bottom: 10px; }
+    .food-description { font-size: 16px; color: #666; margin-bottom: 15px; }
+    .food-price { font-size: 22px; font-weight: bold; color: #FF6347; margin-bottom: 15px; }
     
-    .food-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    }
-    
-    .food-name {
-      font-size: 24px;
-      font-weight: bold;
-      color: #8B0000;
-      margin-bottom: 10px;
-    }
-    
-    .food-description {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 15px;
-      line-height: 1.4;
-    }
-    
-    .food-price {
-      font-size: 22px;
-      font-weight: bold;
-      color: #FF6347;
-      margin-bottom: 15px;
-    }
-    
+    /* SAO CHÍNH XÁC THEO DỮ LIỆU */
     .rating-container {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
       font-size: 18px;
     }
-    
-    /* SAO CHÍNH XÁC */
     .star-rating {
       position: relative;
       display: inline-block;
       color: #ddd;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
-    
     .star-rating::before {
       content: '★';
       position: absolute;
@@ -187,17 +103,48 @@
       color: #FFD700;
       overflow: hidden;
     }
-    
     .star-100::before { width: 100%; }
     .star-80::before { width: 80%; }
     .star-60::before { width: 60%; }
     .star-40::before { width: 40%; }
     .star-20::before { width: 20%; }
     .star-0::before { width: 0%; }
+    
+    /* GIỎ HÀNG FLOATING */
+    .cart-float {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background: #FFD700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+    #cartCount {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #DC143C;
+      color: white;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
-  <!-- PHẦN CHỌN BÀN -->
+  <!-- CHỌN BÀN -->
   <div class="auth-container" id="authContainer">
     <div class="auth-box">
       <h1>🎊 TÂN NIÊN Ý</h1>
@@ -214,12 +161,12 @@
     </div>
   </div>
 
-  <!-- PHẦN MENU -->
+  <!-- MENU -->
   <div id="menuSection" style="display: none;">
     <header class="header">
       <h1 class="restaurant-name">Tân Niên Ý</h1>
+      <div class="customer-info" id="customerInfo"></div>
     </header>
-    <div class="customer-info" id="customerInfo"></div>
 
     <div class="menu-container">
       <section class="category">
@@ -228,8 +175,8 @@
       </section>
     </div>
 
-    <!-- GIỎ HÀNG FLOATING -->
-    <div class="cart-float" id="cartFloat" onclick="location.href='cart.html'">
+    <!-- GIỎ HÀNG -->
+    <div class="cart-float" onclick="location.href='cart.html'">
       <span id="cartCount">0</span>
       <span style="font-size: 24px;">🛒</span>
     </div>
