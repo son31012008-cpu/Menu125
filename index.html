@@ -5,11 +5,198 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu Tân Niên Ý - Tết 2025</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* CSS BỔ SUNG CHO UI ĐẸP */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #8B0000, #DC143C);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .auth-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(139,0,0,0.8), rgba(220,20,60,0.8));
+    }
+    
+    .auth-box {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      text-align: center;
+      min-width: 350px;
+    }
+    
+    .auth-box h1 {
+      color: #8B0000;
+      font-size: 36px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    
+    .auth-box p {
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    
+    .auth-box select {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      border: 2px solid #FFD700;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+    
+    .auth-box select:focus {
+      outline: none;
+      border-color: #FF6347;
+    }
+    
+    #startBtn {
+      width: 100%;
+      padding: 15px;
+      font-size: 20px;
+      background: linear-gradient(45deg, #FFD700, #FF6347);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    #startBtn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    /* PHẦN MENU */
+    .header {
+      text-align: center;
+      padding: 20px;
+      position: relative;
+    }
+    
+    .restaurant-name {
+      font-size: 48px;
+      color: #FFD700;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+      margin-bottom: 10px;
+    }
+    
+    .customer-info {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    
+    .menu-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .category-title {
+      font-size: 28px;
+      color: #FFD700;
+      text-align: center;
+      margin: 30px 0 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .food-grid {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .food-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      width: 350px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .food-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+    
+    .food-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #8B0000;
+      margin-bottom: 10px;
+    }
+    
+    .food-description {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+    
+    .food-price {
+      font-size: 22px;
+      font-weight: bold;
+      color: #FF6347;
+      margin-bottom: 15px;
+    }
+    
+    .rating-container {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 18px;
+    }
+    
+    /* SAO CHÍNH XÁC */
+    .star-rating {
+      position: relative;
+      display: inline-block;
+      color: #ddd;
+      width: 20px;
+      height: 20px;
+    }
+    
+    .star-rating::before {
+      content: '★';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #FFD700;
+      overflow: hidden;
+    }
+    
+    .star-100::before { width: 100%; }
+    .star-80::before { width: 80%; }
+    .star-60::before { width: 60%; }
+    .star-40::before { width: 40%; }
+    .star-20::before { width: 20%; }
+    .star-0::before { width: 0%; }
+  </style>
 </head>
 <body>
-  <div class="tet-background"></div>
-  <div class="flower-container" id="flowerContainer"></div>
-  
   <!-- PHẦN CHỌN BÀN -->
   <div class="auth-container" id="authContainer">
     <div class="auth-box">
@@ -27,12 +214,12 @@
     </div>
   </div>
 
-  <!-- PHẦN MENU (ẨN KHI CHƯA CHỌN BÀN) -->
+  <!-- PHẦN MENU -->
   <div id="menuSection" style="display: none;">
     <header class="header">
       <h1 class="restaurant-name">Tân Niên Ý</h1>
-      <div class="customer-info" id="customerInfo"></div>
     </header>
+    <div class="customer-info" id="customerInfo"></div>
 
     <div class="menu-container">
       <section class="category">
