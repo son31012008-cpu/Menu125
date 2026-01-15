@@ -64,5 +64,5 @@ function createToastContainer() {
   return container;
 }
 
-// ========== EXPORT TẤT CẢ (CHỈ 1 LẦN) ==========
+// ========== CHỈ EXPORT MỘT LẦN ==========
 export { db, auth, signInAnonymously, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, showToast };
