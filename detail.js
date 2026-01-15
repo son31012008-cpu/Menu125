@@ -34,12 +34,12 @@ onSnapshot(foodRef, (doc) => {
       <input type="number" id="quantity" min="1" value="1">
       <button class="order-btn" id="addToCart">🛒 THÊM VÀO GIỎ</button>
     </div>
-  `;  // ✅ CHỈ CÓ DẤU ; - KHÔNG CÓ )
+  `;
   
   setupRating();
   loadStats();
   setupCart(food);
-});
+};
 
 let hasRated = false;
 const userRatingRef = doc(db, 'foodRatings', foodId, 'userRatings', customerId);
@@ -60,7 +60,7 @@ getDoc(userRatingRef).then(docSnap => {
     const data = doc.data() || { average: 0, count: 0 };
     document.getElementById('stats').innerHTML = `
       <p>⭐ Trung bình: <strong>${(data.average || 0).toFixed(1)}</strong> / 5.0</p>
-      <p>👥 Tổng: <strong>${data.count || 0}</strong> đánh giá</p>
+      <p>👥 Tổng: <strong>${data.count || 0}</strong></p>
     `;
   });
 });
@@ -124,3 +124,4 @@ function setupCart(food) {
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
+
