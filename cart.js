@@ -62,7 +62,7 @@ function removeItem(id) {
 // Gửi đơn cho bếp
 document.getElementById('placeOrder').addEventListener('click', () => {
   if (cart.length === 0) {
-    alert('Giỏ hàng trống!');
+    showToast('Giỏ hàng trống!');
     return;
   }
   
@@ -81,7 +81,7 @@ document.getElementById('placeOrder').addEventListener('click', () => {
     localStorage.setItem('pendingOrder', JSON.stringify(order));
     
     // TODO: Sau này lưu vào Firebase
-    alert(`✅ Đã gửi đơn #${orderId} cho bếp!\n\nSẽ chuyển sang trang bếp sau...`);
+    showToast(`✅ Đã gửi đơn #${orderId} cho bếp!\n\nSẽ chuyển sang trang bếp sau...`);
     
     // Giờ tạm thời clear giỏ và quay lại index
     localStorage.removeItem('cart');
@@ -91,3 +91,4 @@ document.getElementById('placeOrder').addEventListener('click', () => {
 
 // Khởi tạo
 renderCart();
+
