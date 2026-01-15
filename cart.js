@@ -24,6 +24,9 @@ async function initCart() {
   renderCart();
   calculateTotal();
   setupEventListeners();
+  
+  // Hiển thị thông tin khách
+  document.getElementById('customerIdCart').textContent = customerId || 'Khách vãng lai';
 }
 
 // ============================================
@@ -65,7 +68,7 @@ function removeFromCart(itemId) {
 }
 
 // ============================================
-// MODAL XÁC NHẬN
+// MODAL XÁC NHẬN (THÊM MỚI)
 // ============================================
 function showConfirmModal(orderData, callback) {
   pendingOrderCallback = callback;
@@ -107,7 +110,7 @@ async function sendOrderToFirebase(orderData) {
     ...orderData,
     status: 'pending',
     createdAt: new Date().toISOString(),
-    orderNumber: Date.now().toString().slice(-6) // Số đơn 6 chữ số
+    orderNumber: Date.now().toString().slice(-6)
   });
   
   // Cập nhật thống kê
@@ -132,12 +135,14 @@ async function sendOrderToFirebase(orderData) {
 // SETUP SỰ KIỆN
 // ============================================
 function setupEventListeners() {
-  const sendBtn = document.getElementById('sendOrderBtn');
-  const tableNumberEl = document.getElementById('tableNumber');
-  const customerNameEl = document.getElementById('customerName');
+  const sendBtn = document.getElementById('placeOrder'); // ĐỔI TÊN NÚT CHO ĐÚNG HTML
   
   if (sendBtn) {
     sendBtn.addEventListener('click', () => {
+      // LẤY THÔNG TIN TỪ HTML (NẾU CÓ)
+      const tableNumberEl = document.getElementById('tableNumber');
+      const customerNameEl = document.getElementById('customerName');
+      
       const tableNumber = tableNumberEl?.value || 'Bàn không xác định';
       const customerName = customerNameEl?.value || 'Khách vãng lai';
       
