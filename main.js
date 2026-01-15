@@ -1,48 +1,27 @@
 import { db, customerId, doc, onSnapshot } from './firebase-config.js';
 
-// ========== CHỌN BÀN ==========
-let tableNumber = localStorage.getItem('tableNumber');
+console.log("✅ Đang tải dữ liệu từ Firebase...");
 
-// Nếu chưa chọn bàn, hiển thị form
-if (!tableNumber) {
-  document.querySelector('.auth-container').style.display = 'flex';
-  document.getElementById('startBtn').addEventListener('click', () => {
-    const selected = document.getElementById('tableSelect').value;
-    if (!selected) {
-      alert('Vui lòng chọn số bàn!');
-      return;
-    }
-    tableNumber = selected;
-    localStorage.setItem('tableNumber', tableNumber);
-    location.reload();
-  });
-} else {
-  // Đã chọn bàn → hiển thị menu
-  document.querySelector('.auth-container').style.display = 'none';
-  document.getElementById('menuSection').style.display = 'block';
-  document.getElementById('customerInfo').innerHTML = `Bàn: <strong>${tableNumber}</strong> | ID: ${customerId}`;
-  
-  loadMenu();
-}
+// Hiển thị ID
+document.getElementById('customerId').textContent = `ID: ${customerId}`;
 
-function loadMenu() {
-  const foodRef = doc(db, 'foodData', 'Number1');
-  
-  onSnapshot(foodRef, (doc) => {
-    if (doc.exists()) {
-      const food = doc.data();
-      renderFoodCard(food);
-    } else {
-      console.error("❌ Không tìm thấy món ăn Number1");
-    }
-  });
-}
+// Tải món ăn từ Firebase
+const foodRef = doc(db, 'foodData', 'Number1');
+
+onSnapshot(foodRef, (doc) => {
+  if (doc.exists()) {
+    const food = doc.data();
+    renderFoodCard(food);
+  } else {
+    console.error("❌ Không tìm thấy món ăn!");
+  }
+});
 
 function renderFoodCard(food) {
   const container = document.getElementById('foodGrid');
   container.innerHTML = `
     <div class="food-card" onclick="location.href='detail.html?id=Number1'">
-      <div class="food-image">${food.icon || '🍜'}</div>
+      <div class="food-image">${food.icon}</div>
       <div class="food-info">
         <h3 class="food-name">${food.name}</h3>
         <p class="food-description">${food.description}</p>
@@ -61,3 +40,7 @@ function renderFoodCard(food) {
       `${stars} (${data.count} đánh giá)`;
   });
 }
+
+// Hiệu ứng hoa rơi (giữ nguyên code cũ)
+function createFlowers() { /* ... */ }
+createFlowers();
