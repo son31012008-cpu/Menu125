@@ -1,20 +1,16 @@
-// ============================================
-// IMPORT - CHỈ 1 LẦN
-// ============================================
 import { db, customerId, doc, setDoc, updateDoc, increment, showToast } from './firebase-config.js';
 import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // ============================================
-// KHAI BÁO BIẾN TOÀN CẦU - CHỈ 1 LẦN
+// KHAI BÁO BIẾN
 // ============================================
 let cart = [];
 let totalAmount = 0;
 let pendingOrderCallback = null;
 
 // ============================================
-// CÁC HÀM CHỨC NĂNG - MỖI HÀM 1 LẦN
+// KHỞI TẠO TRANG
 // ============================================
-
 async function initCart() {
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
@@ -34,12 +30,16 @@ async function initCart() {
   setupEventListeners();
   setupModalEvents();
   
+  // Hiển thị thông tin khách
   const customerEl = document.getElementById('customerIdCart');
   if (customerEl) {
     customerEl.textContent = customerId || 'Khách vãng lai';
   }
 }
 
+// ============================================
+// RENDER GIỎ HÀNG
+// ============================================
 function renderCart() {
   const cartContainer = document.getElementById('cartItems');
   if (!cartContainer) return;
@@ -52,6 +52,7 @@ function renderCart() {
     </div>
   `).join('');
   
+  // Thêm event cho nút xóa
   document.querySelectorAll('.remove-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const itemId = e.target.dataset.id;
@@ -60,6 +61,9 @@ function renderCart() {
   });
 }
 
+// ============================================
+// TÍNH TỔNG TIỀN
+// ============================================
 function calculateTotal() {
   totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalEl = document.getElementById('totalAmount');
@@ -68,19 +72,24 @@ function calculateTotal() {
   }
 }
 
+// ============================================
+// XÓA MÓN KHỎI GIỎ
+// ============================================
 function removeFromCart(itemId) {
   cart = cart.filter(item => item.id !== itemId);
   localStorage.setItem('cart', JSON.stringify(cart));
   renderCart();
   calculateTotal();
+  showToast('Đã xóa món khỏi giỏ!', 'success');
   
   if (cart.length === 0) {
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    setTimeout(() => window.location.reload(), 500);
   }
 }
 
+// ============================================
+// MODAL XÁC NHẬN
+// ============================================
 function showConfirmModal(orderData, callback) {
   pendingOrderCallback = callback;
   
@@ -118,6 +127,9 @@ async function confirmSendOrder() {
   closeConfirmModal();
 }
 
+// ============================================
+// GỬI ĐƠN LÊN FIREBASE
+// ============================================
 async function sendOrderToFirebase(orderData) {
   const orderId = `${orderData.tableNumber}_${Date.now()}`;
   const orderRef = doc(db, 'orders', orderId);
@@ -129,6 +141,7 @@ async function sendOrderToFirebase(orderData) {
     orderNumber: Date.now().toString().slice(-6)
   });
   
+  // Cập nhật thống kê
   const statsRef = doc(db, 'stats', 'daily');
   const statsSnap = await getDoc(statsRef);
   
@@ -146,13 +159,20 @@ async function sendOrderToFirebase(orderData) {
   }
 }
 
+// ============================================
+// SETUP SỰ KIỆN CHO NÚT GỬI ĐƠN
+// ============================================
 function setupEventListeners() {
   const sendBtn = document.getElementById('placeOrder');
   
   if (sendBtn) {
     sendBtn.addEventListener('click', () => {
-      const tableNumber = 'Bàn không xác định';
+      // ✅ LẤY SỐ BÀN TỪ LOCALSTORAGE
+      const tableNumber = localStorage.getItem('tableNumber') || 'Chưa chọn bàn';
       const customerName = customerId || 'Khách vãng lai';
+      
+      // Hiển thị lên UI
+      document.getElementById('tableNumber').textContent = `Bàn: ${tableNumber}`;
       
       if (cart.length === 0) {
         showToast('Giỏ hàng trống!', 'error');
@@ -174,6 +194,7 @@ function setupEventListeners() {
           await sendOrderToFirebase(orderData);
           showToast('✅ Đã gửi đơn cho bếp!', 'success');
           
+          // Xóa giỏ và chuyển trang
           localStorage.removeItem('cart');
           setTimeout(() => {
             window.location.href = 'index.html';
@@ -188,6 +209,9 @@ function setupEventListeners() {
   }
 }
 
+// ============================================
+// SETUP SỰ KIỆN CHO MODAL
+// ============================================
 function setupModalEvents() {
   const confirmBtn = document.querySelector('.btn-confirm');
   const cancelBtn = document.querySelector('.btn-cancel');
