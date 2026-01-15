@@ -113,7 +113,7 @@ function setupRating() {
           
           document.getElementById('starRating').style.pointerEvents = 'none';
           document.getElementById('ratingStatus').textContent = `✅ Đã đánh giá: ${rating} sao`;
-          alert('🎉 Cảm ơn bạn đã đánh giá!');
+          showToast('🎉 Cảm ơn bạn đã đánh giá!');
         });
       });
     }
@@ -161,7 +161,7 @@ function setupCart(food) {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert(`✅ Đã thêm ${qty} ${food.name} vào giỏ hàng!`);
+    showToast(`✅ Đã thêm ${qty} ${food.name} vào giỏ hàng!`);
     location.href = 'index.html'; // Quay lại index
   });
 }
@@ -182,3 +182,4 @@ function createFlowers() {
 }
 
 createFlowers();
+
