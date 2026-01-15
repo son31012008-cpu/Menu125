@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { 
-  getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, 
+  getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment,
   collection, query, where, orderBy, limit, getDocs 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
@@ -27,7 +27,7 @@ if (!customerId) {
 
 signInAnonymously(auth).catch(console.error);
 
-// ========== HÀM THÔNG BÁO TOAST - DÙNG CHUNG ==========
+// ========== HÀM THÔNG BÁO TOAST ==========
 function showToast(message, type = 'success', duration = 3000) {
   const container = document.getElementById('toastContainer') || createToastContainer();
   const toast = document.createElement('div');
@@ -67,10 +67,10 @@ function createToastContainer() {
   return container;
 }
 
-// ========== CHỈ EXPORT MỘT LẦN ==========
+// ========== EXPORT ĐẦY ĐỦ ==========
 export { 
   db, auth, signInAnonymously, customerId, 
-  doc, onSnapshot, getDoc, setDoc, updateDoc, increment, 
-  collection, query, where, orderBy, limit, getDocs, 
+  doc, onSnapshot, getDoc, setDoc, updateDoc, increment,
+  collection, query, where, orderBy, limit, getDocs,
   showToast 
 };
