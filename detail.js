@@ -1,28 +1,46 @@
-import { db, customerId, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, showToast } from './firebase-config.js';
+import { db, getCustomerId } from './firebase-config.js';
+import { doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-const urlParams = new URLSearchParams(window.location.search);
-const foodId = urlParams.get('id');
+let customerId = null;
+let hasRated = false;
 
-if (!foodId) location.href = 'index.html';
-
-const foodRef = doc(db, 'foodData', foodId);
-
-onSnapshot(foodRef, (doc) => {
-  const food = doc.data();
+// BƯỚC 1: Khởi tạo async
+async function init() {
+  customerId = await getCustomerId();
+  const urlParams = new URLSearchParams(window.location.search);
+  const foodId = urlParams.get('id');
   
+  if (!foodId) return location.href = 'index.html';
+  
+  loadFood(foodId);
+}
+
+// BƯỚC 2: Load dữ liệu
+function loadFood(foodId) {
+  const foodRef = doc(db, 'foodData', foodId);
+  
+  onSnapshot(foodRef, (doc) => {
+    if (!doc.exists()) return location.href = 'index.html';
+    
+    const food = doc.data();
+    renderFood(food, foodId);
+    setupRating(foodId); // CHUYỂN foodId vào đây
+    loadStats(foodId);
+    setupCart(food, foodId);
+  });
+}
+
+// BƯỚC 3: Render HTML
+function renderFood(food, foodId) {
   document.getElementById('foodDetail').innerHTML = `
-    <h1 class="food-detail-name">${food.name}</h1>
+    <h1>${food.name}</h1>
     <p>${food.description}</p>
-    <div class="food-detail-price">${food.price.toLocaleString()}đ</div>
+    <div class="price">${food.price.toLocaleString()}đ</div>
     
     <div class="rating-section">
-      <h3>Đánh giá của bạn:</h3>
+      <h3>Đánh giá:</h3>
       <div class="stars" id="starRating">
-        <span class="star" data-rating="1">★</span>
-        <span class="star" data-rating="2">★</span>
-        <span class="star" data-rating="3">★</span>
-        <span class="star" data-rating="4">★</span>
-        <span class="star" data-rating="5">★</span>
+        ${[1,2,3,4,5].map(i => `<span class="star" data-rating="${i}">★</span>`).join('')}
       </div>
       <p id="ratingStatus">Chưa đánh giá</p>
     </div>
@@ -34,45 +52,43 @@ onSnapshot(foodRef, (doc) => {
       <input type="number" id="quantity" min="1" value="1">
       <button class="order-btn" id="addToCart">🛒 THÊM VÀO GIỎ</button>
     </div>
-  `;)
+  `;
+}
+
+// BƯỚC 4: Setup rating (đợi customerId)
+async function setupRating(foodId) {
+  if (!customerId) return;
   
-  setupRating();
-  loadStats();
-  setupCart(food);
-};
-
-let hasRated = false;
-const userRatingRef = doc(db, 'foodRatings', foodId, 'userRatings', customerId);
-const foodRatingRef = doc(db, 'foodRatings', foodId);
-
-// Setup rating
-getDoc(userRatingRef).then(docSnap => {
-  if (docSnap.exists()) {
+  const userRatingRef = doc(db, 'foodRatings', foodId, 'userRatings', customerId);
+  const foodRatingRef = doc(db, 'foodRatings', foodId);
+  
+  // Kiểm tra đã đánh giá chưa
+  const ratingSnap = await getDoc(userRatingRef);
+  if (ratingSnap.exists()) {
     hasRated = true;
-    highlightStars(docSnap.data().rating);
-    document.getElementById('ratingStatus').textContent = `✅ Đã đánh giá: ${docSnap.data().rating} sao`;
+    highlightStars(ratingSnap.data().rating);
+    document.getElementById('ratingStatus').textContent = `✅ Đã đánh giá: ${ratingSnap.data().rating} sao`;
     document.getElementById('starRating').style.pointerEvents = 'none';
-  } else {
-    setupRating();
   }
   
-  onSnapshot(foodRatingRef, doc => {
+  // Load stats
+  onSnapshot(foodRatingRef, (doc) => {
     const data = doc.data() || { average: 0, count: 0 };
     document.getElementById('stats').innerHTML = `
       <p>⭐ Trung bình: <strong>${(data.average || 0).toFixed(1)}</strong> / 5.0</p>
-      <p>👥 Tổng: <strong>${data.count || 0}</strong></p>
+      <p>👥 Tổng: <strong>${data.count || 0}</strong> đánh giá</p>
     `;
   });
-});
-
-function setupRating() {
+  
+  // Click events
   document.querySelectorAll('.star').forEach(star => {
     star.addEventListener('click', async () => {
       if (hasRated) return;
+      
       const rating = parseInt(star.dataset.rating);
       hasRated = true;
       
-      await setDoc(userRatingRef, { rating, timestamp: new Date() });
+      await setDoc(userRatingRef, { rating, timestamp: Date.now() });
       
       const snap = await getDoc(foodRatingRef);
       if (!snap.exists()) {
@@ -80,12 +96,12 @@ function setupRating() {
       } else {
         await updateDoc(foodRatingRef, {
           total: increment(rating),
-          count: increment(1)
+          count: increment(1),
+          average: (snap.data().total + rating) / (snap.data().count + 1)
         });
-        const data = (await getDoc(foodRatingRef)).data();
-        await updateDoc(foodRatingRef, { average: data.total / data.count });
       }
       
+      highlightStars(rating);
       document.getElementById('starRating').style.pointerEvents = 'none';
       document.getElementById('ratingStatus').textContent = `✅ Đã đánh giá: ${rating} sao`;
       showToast('🎉 Cảm ơn bạn đã đánh giá!', 'success');
@@ -93,35 +109,38 @@ function setupRating() {
   });
 }
 
+// BƯỚC 5: Các hàm còn lại
 function highlightStars(rating) {
   document.querySelectorAll('.star').forEach((star, i) => {
     star.classList.toggle('active', i < rating);
   });
 }
 
-function setupCart(food) {
-  document.getElementById('addToCart').addEventListener('click', async () => {
-    const qty = parseInt(document.getElementById('quantity').value);
+function setupCart(food, foodId) {
+  document.getElementById('addToCart').addEventListener('click', () => {
+    const qty = parseInt(document.getElementById('quantity').value) || 1;
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     
     const existing = cart.find(item => item.id === foodId);
     if (existing) {
       existing.quantity += qty;
     } else {
-      cart.push({
-        id: foodId,
-        name: food.name,
-        price: food.price,
-        quantity: qty,
-        icon: food.icon
-      });
+      cart.push({ id: foodId, name: food.name, price: food.price, quantity: qty, icon: food.icon });
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    showToast(`✅ Đã thêm ${qty} ${food.name} vào giỏ hàng!`, 'success');
-    
-    // QUAY LẠI INDEX
+    showToast(`✅ Đã thêm ${qty}x ${food.name} vào giỏ!`, 'success');
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
 
+function showToast(msg, type = 'success') {
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = `position:fixed;top:20px;right:20px;background:${type==='error'?'#f44336':'#4caf50'};color:white;padding:12px 20px;border-radius:4px;z-index:9999`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// KHỞI CHẠY
+init();
