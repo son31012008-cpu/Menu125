@@ -1,7 +1,10 @@
 // Firebase v9+ Modular SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { 
+  getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, 
+  collection, query, where, orderBy, limit, getDocs 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyADHGSv4xwRrqP-ia5WZUWs6GHchtpEYSc",
@@ -65,4 +68,9 @@ function createToastContainer() {
 }
 
 // ========== CHỈ EXPORT MỘT LẦN ==========
-export { db, auth, signInAnonymously, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, showToast };
+export { 
+  db, auth, signInAnonymously, customerId, 
+  doc, onSnapshot, getDoc, setDoc, updateDoc, increment, 
+  collection, query, where, orderBy, limit, getDocs, 
+  showToast 
+};
