@@ -22,4 +22,5 @@ if (!customerId) {
 }
 
 signInAnonymously(auth).catch(console.error);
+
 export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment };
