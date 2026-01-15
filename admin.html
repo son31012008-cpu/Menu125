@@ -32,134 +32,286 @@
       margin-bottom: 10px;
     }
     
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
+    .admin-header p {
+      color: #7f8c8d;
+    }
+
+    /* TAB NAVIGATION */
+    .tab-navigation {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
     }
     
-    .stat-card {
-      background: linear-gradient(45deg, #3498db, #2980b9);
+    .tab-btn {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    
+    .tab-btn.active {
+      background: #e74c3c;
       color: white;
+    }
+    
+    .tab-btn:not(.active) {
+      background: #95a5a6;
+      color: white;
+    }
+    
+    .tab-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .tab-btn .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #f39c12;
+      color: white;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* TAB CONTENTS */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .orders-list {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .order-summary-card {
+      background: white;
       padding: 20px;
       border-radius: 10px;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 32px;
-      font-weight: bold;
-    }
-    
-    .stat-label {
-      font-size: 14px;
-      margin-top: 5px;
-    }
-    
-    .orders-grid {
-      display: grid;
-      gap: 20px;
-    }
-    
-    .order-card {
-      background: white;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      border-left: 5px solid #e74c3c;
+      cursor: pointer;
       transition: all 0.3s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      position: relative;
     }
     
-    .order-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    .order-summary-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .order-summary-card .status-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .status-badge.pending { background: #e74c3c; }
+    .status-badge.preparing { background: #f39c12; }
+    .status-badge.completed { background: #27ae60; }
+    
+    .order-summary-card .order-number {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+
+    .order-summary-card .order-meta {
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+
+    .order-summary-card .order-total {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #e74c3c;
     }
     
-    .order-card.preparing {
-      border-left-color: #f39c12;
+    /* DETAIL BOX - HIỂN THỊ KHI CLICK */
+    .detail-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1999;
+      display: none;
+      backdrop-filter: blur(5px);
     }
     
-    .order-card.ready {
-      border-left-color: #27ae60;
+    .detail-overlay.show {
+      display: block;
+    }
+
+    .order-detail-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      z-index: 2000;
+      display: none;
+      max-width: 650px;
+      max-height: 85vh;
+      overflow-y: auto;
+      width: 90%;
     }
     
-    .order-header {
+    .order-detail-box.show {
+      display: block;
+    }
+    
+    .detail-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #e74c3c;
     }
     
-    .order-number {
-      font-size: 24px;
-      font-weight: bold;
+    .detail-title {
+      font-size: 26px;
       color: #2c3e50;
-    }
-    
-    .order-status {
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
       font-weight: bold;
-      color: white;
     }
     
-    .status-pending { background: #e74c3c; }
-    .status-preparing { background: #f39c12; }
-    .status-ready { background: #27ae60; }
+    .detail-close {
+      font-size: 32px;
+      cursor: pointer;
+      color: #95a5a6;
+      transition: color 0.3s;
+    }
     
-    .order-info {
+    .detail-close:hover {
+      color: #e74c3c;
+    }
+
+    /* DETAIL INFO GRID */
+    .detail-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
       margin-bottom: 20px;
     }
     
-    .order-items {
+    .detail-item {
+      padding: 15px;
       background: #f8f9fa;
+      border-radius: 10px;
+      border-left: 4px solid #3498db;
+    }
+    
+    .detail-item.full-width {
+      grid-column: span 2;
+    }
+    
+    .detail-item strong {
+      color: #2c3e50;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* ITEMS LIST */
+    .detail-items {
+      background: #ecf0f1;
       padding: 15px;
       border-radius: 10px;
     }
     
-    .order-item {
+    .detail-item-row {
       display: flex;
       justify-content: space-between;
-      padding: 5px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #bdc3c7;
     }
     
-    .order-actions {
+    .detail-item-row:last-child {
+      border-bottom: none;
+    }
+
+    /* ACTION BUTTONS */
+    .detail-actions {
       display: flex;
       gap: 10px;
-      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 3px solid #e74c3c;
     }
     
-    .btn-status {
-      padding: 10px 20px;
+    .btn-action {
+      flex: 1;
+      padding: 12px;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
       transition: all 0.3s;
+      font-size: 16px;
     }
     
-    .btn-preparing {
-      background: #f39c12;
+    .btn-start { background: #f39c12; color: white; }
+    .btn-start:hover { background: #e08e0b; }
+    
+    .btn-finish { background: #27ae60; color: white; }
+    .btn-finish:hover { background: #229954; }
+    
+    .btn-back { background: #95a5a6; color: white; }
+    .btn-back:hover { background: #7f8c8d; }
+
+    /* COMPLETED TABLE */
+    .completed-table-container {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .completed-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .completed-table th {
+      background: #34495e;
       color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: bold;
     }
     
-    .btn-ready {
-      background: #27ae60;
-      color: white;
+    .completed-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ecf0f1;
     }
     
-    .btn-complete {
-      background: #95a5a6;
-      color: white;
+    .completed-table tr:hover {
+      background: #f8f9fa;
     }
     
-    .btn-status:hover {
-      transform: scale(1.05);
+    .completed-table .time {
+      font-size: 13px;
+      color: #7f8c8d;
     }
   </style>
 </head>
@@ -167,25 +319,65 @@
   <div class="admin-container">
     <div class="admin-header">
       <h1>🍳 QUẢN LÝ ĐƠN HÀNG - BẾP</h1>
-      <p>ID: <span id="adminId"></span></p>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="pendingCount">0</div>
-          <div class="stat-label">⏳ Chờ xử lý</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="preparingCount">0</div>
-          <div class="stat-label">🔥 Đang nấu</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="readyCount">0</div>
-          <div class="stat-label">✅ Sẵn sàng</div>
-        </div>
+      <p>Bếp trưởng: <span id="adminId">Bếp trưởng</span></p>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-status="pending">
+        ⏳ Đang chờ xử lý
+        <span class="badge" id="pending-badge">0</span>
+      </button>
+      <button class="tab-btn" data-status="preparing">
+        🔥 Đang nấu
+        <span class="badge" id="preparing-badge">0</span>
+      </button>
+      <button class="tab-btn" data-status="completed">
+        ✅ Hoàn thành
+        <span class="badge" id="completed-badge">0</span>
+      </button>
+    </div>
+
+    <!-- TAB CONTENTS -->
+    <div class="tab-content active" id="pending-tab">
+      <div class="orders-list" id="pending-orders"></div>
+    </div>
+    
+    <div class="tab-content" id="preparing-tab">
+      <div class="orders-list" id="preparing-orders"></div>
+    </div>
+    
+    <div class="tab-content" id="completed-tab">
+      <div class="completed-table-container">
+        <table class="completed-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Bàn</th>
+              <th>Khách hàng</th>
+              <th>Tổng tiền</th>
+              <th>Giờ đặt</th>
+              <th>Giờ hoàn thành</th>
+            </tr>
+          </thead>
+          <tbody id="completed-orders"></tbody>
+        </table>
       </div>
     </div>
 
-    <div class="orders-grid" id="ordersGrid"></div>
+  </div>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="detail-overlay" id="detailOverlay" onclick="closeDetailBox()"></div>
+  
+  <!-- DETAIL BOX -->
+  <div class="order-detail-box" id="orderDetailBox">
+    <div class="detail-header">
+      <h2 class="detail-title">Chi tiết đơn hàng</h2>
+      <span class="detail-close" onclick="closeDetailBox()">&times;</span>
+    </div>
+    <div class="detail-content" id="detailContent"></div>
+    <div class="detail-actions" id="detailActions"></div>
   </div>
 
   <script type="module" src="admin.js"></script>
