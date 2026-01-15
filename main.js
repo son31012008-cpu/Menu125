@@ -5,60 +5,84 @@ console.log("✅ Đang tải món từ foodData...");
 // Hiển thị ID
 document.getElementById('customerId').textContent = `ID: ${customerId}`;
 
-// Chờ Firebase tải xong
-setTimeout(() => {
-  const foodRef = doc(db, 'foodData', 'Number1');
-  
-  onSnapshot(foodRef, (doc) => {
-    console.log("📡 Firebase response:", doc.exists, doc.data());
+// Tải món ăn từ Firebase
+const foodRef = doc(db, 'foodData', 'Number1');
+
+onSnapshot(foodRef, (doc) => {
+  if (doc.exists()) {
+    const food = doc.data();
+    console.log("✅ Dữ liệu:", food);
     
-    if (doc.exists()) {
-      const food = doc.data();
-      console.log("✅ Dữ liệu món ăn:", food);
-      
-      // Kiểm tra kiểu dữ liệu
-      if (typeof food.price !== 'number') {
-        console.error("❌ Price phải là NUMBER trong Firebase!");
-        return;
-      }
-      
-      renderFoodCard(food);
-    } else {
-      console.error("❌ Không tìm thấy document Number1 trong collection foodData!");
-      document.getElementById('foodGrid').innerHTML = 
-        `<p style="color:white; text-align:center; font-size:20px;">
-          Chưa có dữ liệu món ăn.<br>
-          Vui lòng tạo collection <strong>foodData</strong> → document <strong>Number1</strong>
-        </p>`;
+    if (typeof food.price !== 'number') {
+      console.error("❌ Price phải là NUMBER, không phải string!");
+      return;
     }
-  });
-}, 1000); // Delay 1s để Firebase kết nối
+    
+    renderFoodCard(food);
+  } else {
+    console.error("❌ Không tìm thấy document Number1 trong collection foodData!");
+  }
+});
 
 function renderFoodCard(food) {
   const container = document.getElementById('foodGrid');
   container.innerHTML = `
     <div class="food-card" onclick="location.href='detail.html?id=Number1'">
       <div class="food-info" style="padding: 25px;">
-        <h3 class="food-name" style="font-size: 26px;">${food.name}</h3>
-        <p class="food-description" style="font-size: 16px; margin: 10px 0;">${food.description}</p>
-        <div class="food-price" style="font-size: 22px; font-weight: bold; color: #FF6347;">
-          ${food.price.toLocaleString()}đ
-        </div>
-        <div class="rating-display" id="rating-Number1" style="margin-top: 15px; font-size: 18px;">
-          ⭐ Đang tải đánh giá...
-        </div>
+        <h3 class="food-name">${food.name}</h3>
+        <p class="food-description">${food.description}</p>
+        <div class="food-price">${food.price.toLocaleString()}đ</div>
+        <div id="rating-Number1" class="rating-container"></div>
       </div>
     </div>
   `;
 
-  // Load đánh giá
+  // Tải đánh giá realtime với hiển thị chính xác
   const ratingRef = doc(db, 'foodRatings', 'Number1');
   onSnapshot(ratingRef, (ratingDoc) => {
     const data = ratingDoc.data() || { average: 0, count: 0 };
-    const stars = '⭐'.repeat(Math.round(data.average || 0));
-    document.getElementById('rating-Number1').textContent = 
-      `${stars} (${data.count} đánh giá)`;
+    console.log("⭐ Đánh giá:", data.average, "sao từ", data.count, "lượt");
+    renderStars('rating-Number1', data.average, data.count);
   });
+}
+
+// ========== HÀM RENDER SAO CHÍNH XÁC ==========
+function renderStars(containerId, average, count) {
+  const container = document.getElementById(containerId);
+  const avg = average || 0;
+  const fullStars = Math.floor(avg);
+  const decimal = avg - fullStars;
+  
+  let html = '';
+  
+  // 4 SAO ĐẦY
+  for (let i = 0; i < fullStars; i++) {
+    html += '<span class="star-rating star-100">★</span>';
+  }
+  
+  // SAO THỨ 5: TÍNH PHẦN TRĂM
+  if (fullStars < 5) {
+    if (decimal >= 0.8) {
+      html += '<span class="star-rating star-80">★</span>';
+    } else if (decimal >= 0.6) {
+      html += '<span class="star-rating star-60">★</span>';
+    } else if (decimal >= 0.4) {
+      html += '<span class="star-rating star-40">★</span>';
+    } else if (decimal >= 0.2) {
+      html += '<span class="star-rating star-20">★</span>';
+    } else {
+      html += '<span class="star-rating star-0">★</span>';
+    }
+  }
+  
+  // SAO RỖNG CÒN LẠI
+  const totalRendered = Math.ceil(avg);
+  for (let i = totalRendered; i < 5; i++) {
+    html += '<span class="star-rating star-0">★</span>';
+  }
+  
+  html += ` <span style="color: #FFD700; font-size: 14px; margin-left: 8px;">(${count})</span>`;
+  container.innerHTML = html;
 }
 
 // Hiệu ứng hoa rơi
