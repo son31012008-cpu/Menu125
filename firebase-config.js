@@ -1,30 +1,25 @@
-// Firebase v9+ Modular SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  // COPY 6 DÒNG CONFIG CỦA BẠN VÀO ĐÂY
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyADHGSv4xwRrqP-ia5WZUWs6GHchtpEYSc",
   authDomain: "menu-vhdg.firebaseapp.com",
   projectId: "menu-vhdg",
   storageBucket: "menu-vhdg.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "486523234627",
+  appId: "1:486523234627:web:c25a8970015f77599627f6"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Tạo ID khách hàng duy nhất
 let customerId = localStorage.getItem('customerId');
 if (!customerId) {
   customerId = 'KH' + Date.now() + Math.random().toString(36).substr(2, 9);
   localStorage.setItem('customerId', customerId);
 }
 
-// Đăng nhập ẩn danh
 signInAnonymously(auth).catch(console.error);
-
-export { db, auth, signInAnonymously, customerId, collection, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, query, orderBy, limit };
+export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment };
