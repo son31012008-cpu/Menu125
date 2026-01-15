@@ -1,94 +1,182 @@
-// ========== CART.JS - LOGIC GIỮ NGUYÊN, UI ĐẸP HƠN ==========
+import { db, customerId, doc, setDoc, updateDoc, increment, showToast } from './firebase-config.js';
 
-// Lấy thông tin từ localStorage
-const customerId = localStorage.getItem('customerId');
-const tableNumber = localStorage.getItem('tableNumber');
-let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let cart = [];
+let totalAmount = 0;
+let pendingOrderCallback = null;
 
-// Hiển thị thông tin bàn và ID
-document.getElementById('tableNumber').textContent = `Bàn ${tableNumber}`;
-document.getElementById('customerIdCart').textContent = customerId;
-
-// Render giỏ hàng
-function renderCart() {
-  const container = document.getElementById('cartItems');
-  const totalDiv = document.getElementById('cartTotal');
-  const cartContainer = document.getElementById('cartContainer');
-  const emptyCart = document.getElementById('emptyCart');
+// ============================================
+// KHỞI TẠO TRANG
+// ============================================
+async function initCart() {
+  cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
-  // Kiểm tra giỏ trống
   if (cart.length === 0) {
-    cartContainer.style.display = 'none';
-    emptyCart.style.display = 'block';
+    document.body.innerHTML = `
+      <div style="text-align:center; padding:50px;">
+        <h2>🛒 Giỏ hàng trống</h2>
+        <p>Quay lại menu để chọn món nhé!</p>
+        <button onclick="window.location.href='index.html'">Quay lại</button>
+      </div>
+    `;
     return;
   }
   
-  cartContainer.style.display = 'block';
-  emptyCart.style.display = 'none';
-  
-  // Render danh sách món
-  container.innerHTML = cart.map(item => `
+  renderCart();
+  calculateTotal();
+  setupEventListeners();
+}
+
+// ============================================
+// RENDER GIỎ HÀNG
+// ============================================
+function renderCart() {
+  const cartContainer = document.getElementById('cartItems');
+  cartContainer.innerHTML = cart.map(item => `
     <div class="cart-item">
-      <div class="item-info">
-        <div class="item-name">${item.name}</div>
-        <div class="item-details">Số lượng: ${item.quantity}</div>
-      </div>
-      <div class="item-price">${(item.price * item.quantity).toLocaleString()}đ</div>
-      <button class="remove-btn" onclick="removeItem('${item.id}')">✕</button>
+      <span>${item.icon} ${item.name}</span>
+      <span>${item.price.toLocaleString()}đ x ${item.quantity}</span>
+      <button onclick="removeFromCart('${item.id}')">Xóa</button>
     </div>
   `).join('');
+}
+
+// ============================================
+// TÍNH TỔNG TIỀN
+// ============================================
+function calculateTotal() {
+  totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  document.getElementById('totalAmount').textContent = `${totalAmount.toLocaleString()}đ`;
+}
+
+// ============================================
+// XÓA MÓN KHỎI GIỎ
+// ============================================
+function removeFromCart(itemId) {
+  cart = cart.filter(item => item.id !== itemId);
+  localStorage.setItem('cart', JSON.stringify(cart));
+  renderCart();
+  calculateTotal();
   
-  // Render tổng tiền
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  totalDiv.innerHTML = `
-    <h2>TỔNG ĐƠN HÀNG</h2>
-    <div class="total-amount">${total.toLocaleString()}đ</div>
-  `;
-}
-
-// Xoá món khỏi giỏ
-function removeItem(id) {
-  if (confirm('Bạn có chắc muốn xoá món này?')) {
-    cart = cart.filter(item => item.id !== id);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
-    // Cập nhật số lượng trên index
-    if (window.opener) {
-      window.opener.updateCartCount?.();
-    }
-  }
-}
-
-// Gửi đơn cho bếp
-document.getElementById('placeOrder').addEventListener('click', () => {
   if (cart.length === 0) {
-    showToast('Giỏ hàng trống!');
-    return;
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }
+}
+
+// ============================================
+// MODAL XÁC NHẬN
+// ============================================
+function showConfirmModal(orderData, callback) {
+  pendingOrderCallback = callback;
   
-  if (confirm('Xác nhận gửi đơn cho bếp?')) {
-    const orderId = 'ORD' + Date.now();
-    const order = {
-      orderId,
-      customerId,
-      tableNumber,
-      items: cart,
-      status: 'pending',
-      timestamp: new Date(),
-      total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    };
-    
-    localStorage.setItem('pendingOrder', JSON.stringify(order));
-    
-    // TODO: Sau này lưu vào Firebase
-    showToast(`✅ Đã gửi đơn #${orderId} cho bếp!\n\nSẽ chuyển sang trang bếp sau...`);
-    
-    // Giờ tạm thời clear giỏ và quay lại index
-    localStorage.removeItem('cart');
-    location.href = 'index.html';
+  const summaryEl = document.getElementById('orderSummary');
+  summaryEl.innerHTML = `
+    <strong>Khách:</strong> ${orderData.customerName}<br>
+    <strong>Bàn:</strong> ${orderData.tableNumber}<br>
+    <strong>Tổng:</strong> ${orderData.totalAmount.toLocaleString()}đ<br>
+    <strong>Số món:</strong> ${orderData.items.length}<br>
+    <hr>
+    <strong>Chi tiết:</strong><br>
+    ${orderData.items.map(item => `${item.name} x${item.quantity}`).join('<br>')}
+  `;
+  
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function closeConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingOrderCallback = null;
+}
+
+async function confirmSendOrder() {
+  if (pendingOrderCallback) {
+    await pendingOrderCallback();
   }
-});
+  closeConfirmModal();
+}
 
-// Khởi tạo
-renderCart();
+// ============================================
+// GỬI ĐƠN LÊN FIREBASE
+// ============================================
+async function sendOrderToFirebase(orderData) {
+  const orderId = `${orderData.tableNumber}_${Date.now()}`;
+  const orderRef = doc(db, 'orders', orderId);
+  
+  await setDoc(orderRef, {
+    ...orderData,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    orderNumber: Date.now().toString().slice(-6) // Số đơn 6 chữ số
+  });
+  
+  // Cập nhật thống kê
+  const statsRef = doc(db, 'stats', 'daily');
+  const statsSnap = await getDoc(statsRef);
+  
+  if (statsSnap.exists()) {
+    await updateDoc(statsRef, {
+      totalOrders: increment(1),
+      totalRevenue: increment(orderData.totalAmount)
+    });
+  } else {
+    await setDoc(statsRef, {
+      totalOrders: 1,
+      totalRevenue: orderData.totalAmount,
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
+}
 
+// ============================================
+// SETUP SỰ KIỆN
+// ============================================
+function setupEventListeners() {
+  const sendBtn = document.getElementById('sendOrderBtn');
+  const tableNumberEl = document.getElementById('tableNumber');
+  const customerNameEl = document.getElementById('customerName');
+  
+  if (sendBtn) {
+    sendBtn.addEventListener('click', () => {
+      const tableNumber = tableNumberEl?.value || 'Bàn không xác định';
+      const customerName = customerNameEl?.value || 'Khách vãng lai';
+      
+      if (cart.length === 0) {
+        showToast('Giỏ hàng trống!', 'error');
+        return;
+      }
+      
+      const orderData = {
+        customerName,
+        tableNumber,
+        items: [...cart],
+        totalAmount: totalAmount,
+        timestamp: Date.now(),
+        status: 'pending'
+      };
+      
+      // ✅ DÙNG MODAL THAY VÌ confirm()
+      showConfirmModal(orderData, async () => {
+        try {
+          await sendOrderToFirebase(orderData);
+          showToast('✅ Đã gửi đơn cho bếp!', 'success');
+          
+          // Xóa giỏ và chuyển trang
+          localStorage.removeItem('cart');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+          
+        } catch (error) {
+          console.error("❌ Lỗi gửi đơn:", error);
+          showToast('Có lỗi khi gửi đơn: ' + error.message, 'error');
+        }
+      });
+    });
+  }
+}
+
+// ============================================
+// KHỞI CHẠY
+// ============================================
+initCart();
