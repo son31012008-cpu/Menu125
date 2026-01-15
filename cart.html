@@ -185,6 +185,76 @@
       cursor: pointer;
       margin-top: 15px;
     }
+
+    /* MODAL XÁC NHẬN - THÊM VÀO ĐÂY */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .confirm-modal {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+    .confirm-modal h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+
+    .confirm-modal .order-summary {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .confirm-modal .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .confirm-modal button {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .confirm-modal .btn-confirm {
+      background: #4caf50;
+      color: white;
+    }
+
+    .confirm-modal .btn-confirm:hover {
+      background: #45a049;
+    }
+
+    .confirm-modal .btn-cancel {
+      background: #f44336;
+      color: white;
+    }
+
+    .confirm-modal .btn-cancel:hover {
+      background: #da190b;
+    }
   </style>
 </head>
 <body>
@@ -208,6 +278,19 @@
     <h2>Giỏ hàng trống!</h2>
     <p>Hãy thêm món ăn vào giỏ nhé</p>
     <button onclick="location.href='index.html'">← QUAY LẠI MENU</button>
+  </div>
+
+  <!-- MODAL XÁC NHẬN - THÊM VÀO ĐÂY -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+      <h3>📋 Xác nhận gửi đơn</h3>
+      <p>Bạn có chắc muốn gửi đơn này cho bếp?</p>
+      <div class="order-summary" id="orderSummary"></div>
+      <div class="modal-buttons">
+        <button class="btn-confirm" onclick="confirmSendOrder()">✅ Gửi đơn</button>
+        <button class="btn-cancel" onclick="closeConfirmModal()">❌ Hủy</button>
+      </div>
+    </div>
   </div>
 
   <script src="cart.js"></script>
