@@ -1,4 +1,5 @@
 import { db, customerId, doc, onSnapshot } from './firebase-config.js';
+import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 console.log("✅ Đang tải menu Tết...");
 
@@ -12,7 +13,7 @@ if (!tableNumber) {
   document.getElementById('startBtn').addEventListener('click', () => {
     const selected = document.getElementById('tableSelect').value;
     if (!selected) {
-      alert('Vui lòng chọn số bàn!'); // Vẫn dùng alert ở đây (không cần thay vì chưa có container)
+      showToast('Vui lòng chọn số bàn!', 'error');
       return;
     }
     localStorage.setItem('tableNumber', selected);
@@ -21,14 +22,18 @@ if (!tableNumber) {
 } else {
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
-  document.getElementById('customerInfo').innerHTML = 
-    `Bàn: <strong style="color:#FFD700;">${tableNumber}</strong> | ID: ${customerId}`;
+  
+  const customerInfo = document.getElementById('customerInfo');
+  if (customerInfo) {
+    customerInfo.innerHTML = `Bàn: <strong style="color:#FFD700;">${tableNumber}</strong> | ID: ${customerId}`;
+  }
   
   loadMenu();
 }
 
 // ========== TẢI MÓN ĂN TỪ FIREBASE ==========
 function loadMenu() {
+  // GIẢ SỬ BẠN CÓ NHIỀU MÓN, TẠI ĐÂY LOAD MÓN ĐẦU TIÊN
   const foodRef = doc(db, 'foodData', 'Number1');
   
   onSnapshot(foodRef, (doc) => {
@@ -45,60 +50,50 @@ function loadMenu() {
   });
 }
 
-// ========== RENDER THẺ MÓN ĂN ==========
+// ========== RENDER THẺ MÓN ĂN - ĐÃ SỬA ==========
 function renderFoodCard(food) {
   const container = document.getElementById('foodGrid');
+  const foodId = 'Number1';
+  
   container.innerHTML = `
-    <div class="food-card" onclick="location.href='detail.html?id=Number1'">
+    <div class="food-card" data-id="${foodId}">
       <div class="food-info">
         <h3 class="food-name">${food.name}</h3>
         <p class="food-description">${food.description}</p>
         <div class="food-price">${food.price.toLocaleString()}đ</div>
-        <div id="rating-Number1" class="rating-display"></div>
+        <div id="rating-${foodId}" class="rating-display"></div>
       </div>
     </div>
   `;
 
-  const ratingRef = doc(db, 'foodRatings', 'Number1');
+  // ✅ THÊM EVENT LISTENER CHO FOOD CARD
+  const foodCard = container.querySelector('.food-card');
+  if (foodCard) {
+    foodCard.addEventListener('click', () => {
+      location.href = `detail.html?id=${foodId}`;
+    });
+  }
+
+  const ratingRef = doc(db, 'foodRatings', foodId);
   onSnapshot(ratingRef, (ratingDoc) => {
     const data = ratingDoc.data() || { average: 0, count: 0 };
-    renderStars('rating-Number1', data.average, data.count);
+    renderStars(`rating-${foodId}`, data.average, data.count);
   });
 }
 
-// ========== RENDER SAO CHÍNH XÁC THEO DỮ LIỆU ==========
+// ========== RENDER SAO ==========
 function renderStars(containerId, average, count) {
   const container = document.getElementById(containerId);
   const avg = average || 0;
   const fullStars = Math.floor(avg);
-  const decimal = avg - fullStars;
   
   let html = '';
-  
-  // SAO ĐẦY
-  for (let i = 0; i < fullStars; i++) {
-    html += '<span class="star-rating star-100">★</span>';
-  }
-  
-  // SAO THỨ N: PHẦN TRĂM
-  if (fullStars < 5) {
-    if (decimal >= 0.8) {
-      html += '<span class="star-rating star-80">★</span>';
-    } else if (decimal >= 0.6) {
-      html += '<span class="star-rating star-60">★</span>';
-    } else if (decimal >= 0.4) {
-      html += '<span class="star-rating star-40">★</span>';
-    } else if (decimal >= 0.2) {
-      html += '<span class="star-rating star-20">★</span>';
+  for (let i = 0; i < 5; i++) {
+    if (i < fullStars) {
+      html += '<span class="star-rating star-100">★</span>';
     } else {
       html += '<span class="star-rating star-0">★</span>';
     }
-  }
-  
-  // SAO RỖNG CÒN LẠI
-  const totalRendered = Math.ceil(avg);
-  for (let i = totalRendered; i < 5; i++) {
-    html += '<span class="star-rating star-0">★</span>';
   }
   
   html += ` <span style="color:#FFD700; font-size:14px; margin-left:8px;">(${count || 0})</span>`;
@@ -138,8 +133,20 @@ function createFlowers() {
   }, 500);
 }
 
-// Khởi tạo khi load trang
+// ========== SETUP SỰ KIỆN ==========
+function setupEventListeners() {
+  // Nút giỏ hàng floating
+  const cartFloat = document.getElementById('cartFloat');
+  if (cartFloat) {
+    cartFloat.addEventListener('click', () => {
+      location.href = 'cart.html';
+    });
+  }
+}
+
+// ========== KHỞI TẠO ==========
 window.addEventListener('load', () => {
   createFlowers();
   updateCartCount();
+  setupEventListeners();
 });
