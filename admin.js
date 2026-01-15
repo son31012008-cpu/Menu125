@@ -1,5 +1,8 @@
-import { db, doc, updateDoc } from './firebase-config.js';
-import { collection, query, where, orderBy, onSnapshot, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { db } from './firebase-config.js';
+import { 
+  collection, query, where, orderBy, onSnapshot, limit, getDocs,
+  doc, updateDoc, getDoc // Đã thêm getDoc
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let currentStatus = 'pending';
 let selectedOrder = null;
@@ -40,7 +43,10 @@ function loadOrders() {
 
 function listenToPendingOrders() {
   const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, where('status', '==', 'pending'), orderBy('timestamp', 'asc'));
+  const q = query(ordersRef, 
+    where('status', '==', 'pending'), 
+    orderBy('timestamp', 'asc')
+  );
   
   onSnapshot(q, (snapshot) => {
     const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -54,7 +60,10 @@ function listenToPendingOrders() {
 
 function listenToPreparingOrders() {
   const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, where('status', '==', 'preparing'), orderBy('timestamp', 'asc'));
+  const q = query(ordersRef, 
+    where('status', '==', 'preparing'), 
+    orderBy('timestamp', 'asc')
+  );
   
   onSnapshot(q, (snapshot) => {
     const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -68,7 +77,11 @@ function listenToPreparingOrders() {
 
 function listenToCompletedOrders() {
   const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, where('status', '==', 'completed'), orderBy('completedAt', 'desc'), limit(50));
+  const q = query(ordersRef, 
+    where('status', '==', 'completed'), 
+    orderBy('completedAt', 'desc'), 
+    limit(50)
+  );
   
   onSnapshot(q, (snapshot) => {
     const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -141,15 +154,16 @@ function renderCompletedOrders(orders) {
 // HIỂN THỊ CHI TIẾT
 // ============================================
 window.showOrderDetail = function(orderId) {
-  const status = currentStatus;
-  const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, where('__name__', '==', orderId));
+  // SỬA LỖI: Dùng getDoc trực tiếp thay vì query
+  const orderRef = doc(db, 'orders', orderId);
   
-  getDocs(q).then(snapshot => {
-    if (!snapshot.empty) {
-      const order = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+  getDoc(orderRef).then(docSnap => {
+    if (docSnap.exists()) {
+      const order = { id: docSnap.id, ...docSnap.data() };
       selectedOrder = order;
       renderDetailBox(order);
+    } else {
+      showToast('Không tìm thấy đơn hàng!', 'error');
     }
   }).catch(error => {
     console.error("❌ Lỗi tải chi tiết:", error);
