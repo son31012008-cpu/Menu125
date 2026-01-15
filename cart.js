@@ -1,13 +1,20 @@
+// ============================================
+// IMPORT - CHỈ 1 LẦN
+// ============================================
 import { db, customerId, doc, setDoc, updateDoc, increment, showToast } from './firebase-config.js';
 import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+// ============================================
+// KHAI BÁO BIẾN TOÀN CẦU - CHỈ 1 LẦN
+// ============================================
 let cart = [];
 let totalAmount = 0;
 let pendingOrderCallback = null;
 
 // ============================================
-// KHỞI TẠO TRANG
+// CÁC HÀM CHỨC NĂNG - MỖI HÀM 1 LẦN
 // ============================================
+
 async function initCart() {
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
@@ -25,14 +32,14 @@ async function initCart() {
   renderCart();
   calculateTotal();
   setupEventListeners();
+  setupModalEvents();
   
-  // Hiển thị thông tin khách
-  document.getElementById('customerIdCart').textContent = customerId || 'Khách vãng lai';
+  const customerEl = document.getElementById('customerIdCart');
+  if (customerEl) {
+    customerEl.textContent = customerId || 'Khách vãng lai';
+  }
 }
 
-// ============================================
-// RENDER GIỎ HÀNG
-// ============================================
 function renderCart() {
   const cartContainer = document.getElementById('cartItems');
   if (!cartContainer) return;
@@ -41,14 +48,18 @@ function renderCart() {
     <div class="cart-item">
       <span>${item.icon} ${item.name}</span>
       <span>${item.price.toLocaleString()}đ x ${item.quantity}</span>
-      <button onclick="removeFromCart('${item.id}')">Xóa</button>
+      <button class="remove-btn" data-id="${item.id}">Xóa</button>
     </div>
   `).join('');
+  
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const itemId = e.target.dataset.id;
+      removeFromCart(itemId);
+    });
+  });
 }
 
-// ============================================
-// TÍNH TỔNG TIỀN
-// ============================================
 function calculateTotal() {
   totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalEl = document.getElementById('totalAmount');
@@ -57,9 +68,6 @@ function calculateTotal() {
   }
 }
 
-// ============================================
-// XÓA MÓN KHỎI GIỎ
-// ============================================
 function removeFromCart(itemId) {
   cart = cart.filter(item => item.id !== itemId);
   localStorage.setItem('cart', JSON.stringify(cart));
@@ -73,9 +81,6 @@ function removeFromCart(itemId) {
   }
 }
 
-// ============================================
-// MODAL XÁC NHẬN (THÊM MỚI)
-// ============================================
 function showConfirmModal(orderData, callback) {
   pendingOrderCallback = callback;
   
@@ -113,9 +118,6 @@ async function confirmSendOrder() {
   closeConfirmModal();
 }
 
-// ============================================
-// GỬI ĐƠN LÊN FIREBASE
-// ============================================
 async function sendOrderToFirebase(orderData) {
   const orderId = `${orderData.tableNumber}_${Date.now()}`;
   const orderRef = doc(db, 'orders', orderId);
@@ -127,7 +129,6 @@ async function sendOrderToFirebase(orderData) {
     orderNumber: Date.now().toString().slice(-6)
   });
   
-  // Cập nhật thống kê
   const statsRef = doc(db, 'stats', 'daily');
   const statsSnap = await getDoc(statsRef);
   
@@ -145,18 +146,13 @@ async function sendOrderToFirebase(orderData) {
   }
 }
 
-// ============================================
-// SETUP SỰ KIỆN
-// ============================================
 function setupEventListeners() {
   const sendBtn = document.getElementById('placeOrder');
   
   if (sendBtn) {
     sendBtn.addEventListener('click', () => {
-      // Lấy thông tin từ URL hoặc mặc định
-      const urlParams = new URLSearchParams(window.location.search);
-      const tableNumber = urlParams.get('table') || 'Bàn không xác định';
-      const customerName = `KH${Date.now()}`;
+      const tableNumber = 'Bàn không xác định';
+      const customerName = customerId || 'Khách vãng lai';
       
       if (cart.length === 0) {
         showToast('Giỏ hàng trống!', 'error');
@@ -173,13 +169,11 @@ function setupEventListeners() {
         customerId: customerId
       };
       
-      // ✅ DÙNG MODAL THAY VÌ confirm()
       showConfirmModal(orderData, async () => {
         try {
           await sendOrderToFirebase(orderData);
           showToast('✅ Đã gửi đơn cho bếp!', 'success');
           
-          // Xóa giỏ và chuyển trang
           localStorage.removeItem('cart');
           setTimeout(() => {
             window.location.href = 'index.html';
@@ -193,35 +187,8 @@ function setupEventListeners() {
     });
   }
 }
-// ============================================
-// RENDER GIỎ HÀNG - ĐÃ SỬA
-// ============================================
-function renderCart() {
-  const cartContainer = document.getElementById('cartItems');
-  if (!cartContainer) return;
-  
-  cartContainer.innerHTML = cart.map(item => `
-    <div class="cart-item">
-      <span>${item.icon} ${item.name}</span>
-      <span>${item.price.toLocaleString()}đ x ${item.quantity}</span>
-      <button class="remove-btn" data-id="${item.id}">Xóa</button>
-    </div>
-  `).join('');
-  
-  // ✅ THÊM EVENT LISTENER CHO NÚT XÓA
-  document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const itemId = e.target.dataset.id;
-      removeFromCart(itemId);
-    });
-  });
-}
 
-// ============================================
-// MODAL XÁC NHẬN - ĐÃ SỬA
-// ============================================
 function setupModalEvents() {
-  // Nút gửi đơn trong modal
   const confirmBtn = document.querySelector('.btn-confirm');
   const cancelBtn = document.querySelector('.btn-cancel');
   
@@ -232,8 +199,8 @@ function setupModalEvents() {
     cancelBtn.addEventListener('click', closeConfirmModal);
   }
 }
+
 // ============================================
 // KHỞI CHẠY
 // ============================================
 initCart();
-
