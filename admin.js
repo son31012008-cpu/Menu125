@@ -1,7 +1,5 @@
-import { 
-  db, doc, getDoc, updateDoc, 
-  collection, query, where, orderBy, onSnapshot, limit, getDocs 
-} from './firebase-config.js';
+import { db, doc, getDoc, updateDoc } from './firebase-config.js';
+import { collection, query, where, orderBy, onSnapshot, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let currentStatus = 'pending';
 let selectedOrder = null;
@@ -32,7 +30,7 @@ function setupTabEvents() {
 }
 
 // ============================================
-// LOAD ĐƠN HÀNG REALTIME - 3 INDEXES
+// LOAD ĐƠN HÀNG REALTIME
 // ============================================
 function loadOrders() {
   listenToPendingOrders();
@@ -264,6 +262,9 @@ window.updateOrderStatus = function(orderId, status) {
   });
 }
 
+// ============================================
+// UPDATE BADGE
+// ============================================
 function updateBadge(status, count) {
   const badge = document.getElementById(`${status}-badge`);
   if (badge) {
@@ -272,6 +273,9 @@ function updateBadge(status, count) {
   }
 }
 
+// ============================================
+// HELPERS
+// ============================================
 function getStatusText(status) {
   const statuses = {
     pending: 'Đang chờ',
@@ -281,6 +285,9 @@ function getStatusText(status) {
   return statuses[status] || status;
 }
 
+// ============================================
+// SHOW TOAST
+// ============================================
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer') || (() => {
     const c = document.createElement('div');
