@@ -1,3 +1,4 @@
+// Firebase v9+ Modular SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getFirestore, doc, onSnapshot, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -22,8 +23,6 @@ if (!customerId) {
 }
 
 signInAnonymously(auth).catch(console.error);
-
-export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment };
 
 // ========== HÀM THÔNG BÁO TOAST - DÙNG CHUNG ==========
 function showToast(message, type = 'success', duration = 3000) {
@@ -65,5 +64,5 @@ function createToastContainer() {
   return container;
 }
 
-// Xuất để các file khác có thể import
-export { db, auth, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, showToast };
+// ========== EXPORT TẤT CẢ (CHỈ 1 LẦN) ==========
+export { db, auth, signInAnonymously, customerId, doc, onSnapshot, getDoc, setDoc, updateDoc, increment, showToast };
