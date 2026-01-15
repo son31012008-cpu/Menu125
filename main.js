@@ -1,5 +1,6 @@
 import { db, customerId, doc, onSnapshot } from './firebase-config.js';
 import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { showToast } from './firebase-config.js'; // ✅ THÊM IMPORT
 
 console.log("✅ Đang tải menu Tết...");
 
@@ -40,11 +41,13 @@ function loadMenu() {
       const food = doc.data();
       if (typeof food.price !== 'number') {
         console.error("❌ Price phải là NUMBER trong Firebase!");
+        showToast('Lỗi dữ liệu món ăn!', 'error');
         return;
       }
       renderFoodCard(food);
     } else {
       console.error("❌ Không tìm thấy món ăn!");
+      showToast('Món ăn không tồn tại!', 'error');
     }
   });
 }
@@ -86,6 +89,8 @@ function renderFoodCard(food) {
 // ========== RENDER SAO ==========
 function renderStars(containerId, average, count) {
   const container = document.getElementById(containerId);
+  if (!container) return;
+  
   const avg = average || 0;
   const fullStars = Math.floor(avg);
   
