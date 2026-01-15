@@ -9,13 +9,16 @@ function renderFoodDetail(food, foodId) {
   if (!foodDetailEl) return;
   
   foodDetailEl.innerHTML = `
-    <h1 class="food-detail-name">${food.name}</h1>
-    <p>${food.description || 'Không có mô tả'}</p>
-    <div class="food-detail-price">${(food.price || 0).toLocaleString()}đ</div>
+    <div class="food-info-section">
+      <span class="food-icon">${food.icon || '🍽️'}</span>
+      <h1 class="food-detail-name">${food.name}</h1>
+      <p class="food-detail-description">${food.description || 'Không có mô tả'}</p>
+      <div class="food-detail-price">${(food.price || 0).toLocaleString()}đ</div>
+    </div>
     
     <div class="rating-section">
-      <h3>Đánh giá của bạn:</h3>
-      <div class="stars" id="starRating">
+      <h3 class="rating-title">🌟 Đánh giá của bạn:</h3>
+      <div class="stars-container" id="starRating">
         <span class="star" data-rating="1">★</span>
         <span class="star" data-rating="2">★</span>
         <span class="star" data-rating="3">★</span>
@@ -25,12 +28,18 @@ function renderFoodDetail(food, foodId) {
       <p id="ratingStatus">Chưa đánh giá</p>
     </div>
     
-    <div id="stats"></div>
+    <div class="stats-section">
+      <h3>📊 Thống kê đánh giá</h3>
+      <div class="stats-grid" id="stats"></div>
+    </div>
     
     <div class="order-section">
-      <label>Số lượng: </label>
-      <input type="number" id="quantity" min="1" value="1">
-      <button class="order-btn" id="addToCart">🛒 THÊM VÀO GIỎ</button>
+      <h3 class="order-title">🛒 Đặt hàng:</h3>
+      <div class="quantity-control">
+        <label class="quantity-label">Số lượng:</label>
+        <input type="number" id="quantity" min="1" value="1">
+      </div>
+      <button class="add-to-cart-btn" id="addToCart">🛒 THÊM VÀO GIỎ HÀNG</button>
     </div>
   `;
 }
@@ -47,15 +56,27 @@ function loadStats(foodRatingRef) {
     const statsDiv = document.getElementById('stats');
     if (statsDiv) {
       statsDiv.innerHTML = `
-        <p>⭐ Trung bình: <strong>${(data.average || 0).toFixed(1)}</strong> / 5.0</p>
-        <p>👥 Tổng: <strong>${data.count || 0}</strong> đánh giá</p>
+        <div class="stat-item">
+          <span class="stat-value">${(data.average || 0).toFixed(1)}</span>
+          <span class="stat-label">⭐ Trung bình</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">${data.count || 0}</span>
+          <span class="stat-label">👥 Tổng đánh giá</span>
+        </div>
       `;
     }
   });
 }
 
 function setupRating(userRatingRef, foodRatingRef) {
-  document.querySelectorAll('.star').forEach(star => {
+  const stars = document.querySelectorAll('.star');
+  const starRating = document.getElementById('starRating');
+  
+  if (!starRating || starRating.style.pointerEvents === 'none') return;
+  
+  // Click event
+  stars.forEach(star => {
     star.addEventListener('click', async () => {
       if (hasRated) return;
       const rating = parseInt(star.dataset.rating);
@@ -77,7 +98,7 @@ function setupRating(userRatingRef, foodRatingRef) {
         
         hasRated = true;
         highlightStars(rating);
-        document.getElementById('starRating').style.pointerEvents = 'none';
+        starRating.style.pointerEvents = 'none';
         document.getElementById('ratingStatus').textContent = `✅ Đã đánh giá: ${rating} sao`;
         showToast('🎉 Cảm ơn bạn đã đánh giá!', 'success');
       } catch (error) {
@@ -85,6 +106,23 @@ function setupRating(userRatingRef, foodRatingRef) {
         hasRated = false;
       }
     });
+    
+    // ✅ HIỆU ỨNG HOVER
+    star.addEventListener('mouseenter', () => {
+      const rating = parseInt(star.dataset.rating);
+      highlightStars(rating);
+    });
+  });
+  
+  // Reset khi rời chuột
+  starRating.addEventListener('mouseleave', () => {
+    const status = document.getElementById('ratingStatus');
+    if (status && status.textContent.includes('✅')) {
+      const rated = parseInt(status.textContent.match(/\d+/)[0]);
+      highlightStars(rated);
+    } else {
+      highlightStars(0);
+    }
   });
 }
 
