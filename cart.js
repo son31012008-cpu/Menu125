@@ -193,8 +193,47 @@ function setupEventListeners() {
     });
   }
 }
+// ============================================
+// RENDER GIỎ HÀNG - ĐÃ SỬA
+// ============================================
+function renderCart() {
+  const cartContainer = document.getElementById('cartItems');
+  if (!cartContainer) return;
+  
+  cartContainer.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <span>${item.icon} ${item.name}</span>
+      <span>${item.price.toLocaleString()}đ x ${item.quantity}</span>
+      <button class="remove-btn" data-id="${item.id}">Xóa</button>
+    </div>
+  `).join('');
+  
+  // ✅ THÊM EVENT LISTENER CHO NÚT XÓA
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const itemId = e.target.dataset.id;
+      removeFromCart(itemId);
+    });
+  });
+}
 
+// ============================================
+// MODAL XÁC NHẬN - ĐÃ SỬA
+// ============================================
+function setupModalEvents() {
+  // Nút gửi đơn trong modal
+  const confirmBtn = document.querySelector('.btn-confirm');
+  const cancelBtn = document.querySelector('.btn-cancel');
+  
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', confirmSendOrder);
+  }
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeConfirmModal);
+  }
+}
 // ============================================
 // KHỞI CHẠY
 // ============================================
 initCart();
+
