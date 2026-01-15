@@ -12,7 +12,7 @@ if (!tableNumber) {
   document.getElementById('startBtn').addEventListener('click', () => {
     const selected = document.getElementById('tableSelect').value;
     if (!selected) {
-      alert('Vui lòng chọn số bàn!');
+      showToast('Vui lòng chọn số bàn!');
       return;
     }
     localStorage.setItem('tableNumber', selected);
@@ -143,3 +143,4 @@ window.addEventListener('load', () => {
   createFlowers();
   updateCartCount();
 });
+
