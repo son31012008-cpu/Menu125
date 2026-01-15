@@ -62,4 +62,37 @@ body { font-family: 'Noto Serif JP', serif; background: linear-gradient(135deg, 
 .stats { margin-top: 20px; }
 
 /* Responsive */
+
 @media (max-width: 768px) { .restaurant-name { font-size: 56px; } }
+/* ========== RENDER SAO CHÍNH XÁC ========== */
+.star-rating {
+  position: relative;
+  display: inline-block;
+  color: #ddd; /* Màu sao rỗng */
+  font-size: 20px;
+  width: 1em;
+  height: 1em;
+}
+
+.star-rating::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #FFD700; /* Màu sao đầy */
+  overflow: hidden;
+}
+
+.star-100::before { width: 100%; }
+.star-80::before { width: 80%; }
+.star-60::before { width: 60%; }
+.star-40::before { width: 40%; }
+.star-20::before { width: 20%; }
+.star-0::before { width: 0%; }
+
+.rating-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
