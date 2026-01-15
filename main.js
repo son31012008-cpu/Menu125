@@ -12,7 +12,7 @@ if (!tableNumber) {
   document.getElementById('startBtn').addEventListener('click', () => {
     const selected = document.getElementById('tableSelect').value;
     if (!selected) {
-      showToast('Vui lòng chọn số bàn!');
+      alert('Vui lòng chọn số bàn!'); // Vẫn dùng alert ở đây (không cần thay vì chưa có container)
       return;
     }
     localStorage.setItem('tableNumber', selected);
@@ -59,7 +59,6 @@ function renderFoodCard(food) {
     </div>
   `;
 
-  // Load đánh giá realtime
   const ratingRef = doc(db, 'foodRatings', 'Number1');
   onSnapshot(ratingRef, (ratingDoc) => {
     const data = ratingDoc.data() || { average: 0, count: 0 };
@@ -119,8 +118,9 @@ function updateCartCount() {
 // ========== HOẠT ẢNH HOA RƠI ==========
 function createFlowers() {
   const container = document.getElementById('flowerContainer');
-  const flowers = ['🌸', '🌺', '🌼', '🌻', '🌹', '🌷', '🌵'];
+  if (!container) return;
   
+  const flowers = ['🌸', '🌺', '🌼', '🌻', '🌹', '🌷', '🌵'];
   setInterval(() => {
     const flower = document.createElement('div');
     flower.className = 'flower';
@@ -143,4 +143,3 @@ window.addEventListener('load', () => {
   createFlowers();
   updateCartCount();
 });
-
