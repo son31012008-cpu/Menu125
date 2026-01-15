@@ -33,7 +33,6 @@ if (!tableNumber) {
 
 // ========== TẢI MÓN ĂN TỪ FIREBASE ==========
 function loadMenu() {
-  // GIẢ SỬ BẠN CÓ NHIỀU MÓN, TẠI ĐÂY LOAD MÓN ĐẦU TIÊN
   const foodRef = doc(db, 'foodData', 'Number1');
   
   onSnapshot(foodRef, (doc) => {
@@ -50,13 +49,13 @@ function loadMenu() {
   });
 }
 
-// ========== RENDER THẺ MÓN ĂN - ĐÃ SỬA ==========
+// ========== RENDER THẺ MÓN ĂN - ĐÃ SỬA ĐÚNG ==========
 function renderFoodCard(food) {
   const container = document.getElementById('foodGrid');
   const foodId = 'Number1';
   
   container.innerHTML = `
-    <div class="food-card" data-id="${foodId}">
+    <div class="food-card" data-id="${foodId}" id="food-${foodId}">
       <div class="food-info">
         <h3 class="food-name">${food.name}</h3>
         <p class="food-description">${food.description}</p>
@@ -66,14 +65,17 @@ function renderFoodCard(food) {
     </div>
   `;
 
-  // ✅ THÊM EVENT LISTENER CHO FOOD CARD
-  const foodCard = container.querySelector('.food-card');
-  if (foodCard) {
-    foodCard.addEventListener('click', () => {
-      location.href = `detail.html?id=${foodId}`;
-    });
-  }
+  // ✅ ĐỢI 100ms RỒI MỚI GẮN SỰ KIỆN
+  setTimeout(() => {
+    const foodCard = document.getElementById(`food-${foodId}`);
+    if (foodCard) {
+      foodCard.addEventListener('click', () => {
+        location.href = `detail.html?id=${foodId}`;
+      });
+    }
+  }, 100);
 
+  // Load rating
   const ratingRef = doc(db, 'foodRatings', foodId);
   onSnapshot(ratingRef, (ratingDoc) => {
     const data = ratingDoc.data() || { average: 0, count: 0 };
@@ -89,11 +91,7 @@ function renderStars(containerId, average, count) {
   
   let html = '';
   for (let i = 0; i < 5; i++) {
-    if (i < fullStars) {
-      html += '<span class="star-rating star-100">★</span>';
-    } else {
-      html += '<span class="star-rating star-0">★</span>';
-    }
+    html += `<span class="star-rating ${i < fullStars ? 'star-100' : 'star-0'}">★</span>`;
   }
   
   html += ` <span style="color:#FFD700; font-size:14px; margin-left:8px;">(${count || 0})</span>`;
