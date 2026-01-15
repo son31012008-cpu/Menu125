@@ -273,20 +273,45 @@
   </style>
 </head>
 <body>
-  <div class="tet-background"></div>
-  <div id="flowerContainer"></div>
-  
-  <div class="detail-container">
-    <div class="detail-header">
-      <a href="index.html" class="back-btn">← Quay lại Menu</a>
+  <div class="cart-container" id="cartContainer">
+    <div class="cart-header">
+      <h1>🛒 GIỎ HÀNG CỦA BẠN</h1>
+      <div class="order-info">
+        <span class="table-number" id="tableNumber"></span>
+        <span>Khách: <span id="customerIdCart"></span></span>
+      </div>
     </div>
     
-    <div class="detail-body" id="foodDetail">
-      <!-- Nội dung sẽ được render bằng JavaScript -->
+    <div id="cartItems"></div>
+    
+    <div class="cart-total" id="cartTotal">
+      <h2>TỔNG ĐƠN HÀNG</h2>
+      <div class="total-amount" id="totalAmount">0đ</div>
+    </div>
+    
+    <button class="send-order-btn" id="placeOrder">📤 GỬI ĐƠN CHO BẾP</button>
+  </div>
+  
+  <div class="empty-cart" id="emptyCart" style="display: none;">
+    <h2>Giỏ hàng trống!</h2>
+    <p>Hãy thêm món ăn vào giỏ nhé</p>
+    <button onclick="location.href='index.html'">← QUAY LẠI MENU</button>
+  </div>
+
+  <!-- MODAL XÁC NHẬN - KHÔNG CÓ ONCLICK NỮA -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+      <h3>📋 Xác nhận gửi đơn</h3>
+      <p>Bạn có chắc muốn gửi đơn này cho bếp?</p>
+      <div class="order-summary" id="orderSummary"></div>
+      <div class="modal-buttons">
+        <button class="btn-confirm">✅ Gửi đơn</button>
+        <button class="btn-cancel">❌ Hủy</button>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="detail.js"></script>
-</script>
+  <script type="module" src="cart.js"></script>
 </body>
 </html>
+
