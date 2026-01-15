@@ -39,7 +39,7 @@ onSnapshot(foodRef, (doc) )=> {
   setupRating();
   loadStats();
   setupCart(food);
-};
+});
 
 let hasRated = false;
 const userRatingRef = doc(db, 'foodRatings', foodId, 'userRatings', customerId);
@@ -124,5 +124,6 @@ function setupCart(food) {
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
+
 
 
