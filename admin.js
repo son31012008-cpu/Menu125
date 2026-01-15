@@ -1,8 +1,8 @@
-import { db } from './firebase-config.js';
+// Import từ file firebase-config.js của bạn
 import { 
-  collection, query, where, orderBy, onSnapshot, limit, getDocs,
-  doc, updateDoc, getDoc // Đã thêm getDoc
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  db, doc, getDoc, updateDoc, 
+  collection, query, where, orderBy, onSnapshot, limit, getDocs 
+} from './firebase-config.js';
 
 let currentStatus = 'pending';
 let selectedOrder = null;
