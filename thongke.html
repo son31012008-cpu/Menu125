@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thống kê món ăn - Bếp</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* CSS CHO TRANG THỐNG KÊ */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      padding: 20px;
+      margin: 0;
+    }
+    
+    .statistics-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .statistics-header {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .statistics-header h1 {
+      color: #e74c3c;
+      margin-bottom: 10px;
+    }
+    
+    .statistics-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .summary-card {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .summary-card h3 {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .summary-card .value {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    .filters-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 10px 20px;
+      border: 2px solid #e74c3c;
+      background: white;
+      color: #e74c3c;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .food-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+    
+    .stat-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #ecf0f1;
+    }
+    
+    .stat-icon {
+      font-size: 40px;
+    }
+    
+    .stat-info h3 {
+      margin: 0;
+      color: #2c3e50;
+    }
+    
+    .stat-info .category {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+    
+    .stat-details {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .quantity-sold {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    
+    .revenue {
+      font-size: 18px;
+      color: #27ae60;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 60px;
+      color: #7f8c8d;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="statistics-container">
+    <div class="statistics-header">
+      <h1>📊 THỐNG KÊ MÓN ĂN</h1>
+      <p>Xem số lượng và doanh thu theo món</p>
+      
+      <div class="statistics-summary" id="statistics-summary">
+        <!-- Tổng quan sẽ load ở đây -->
+      </div>
+    </div>
+
+    <div class="filters-container">
+      <div class="filter-buttons">
+        <button class="filter-btn active" onclick="loadStatistics('today')">Hôm nay</button>
+        <button class="filter-btn" onclick="loadStatistics('week')">7 ngày qua</button>
+        <button class="filter-btn" onclick="loadStatistics('month')">30 ngày qua</button>
+        <button class="filter-btn" onclick="loadStatistics('all')">Tất cả</button>
+      </div>
+    </div>
+
+    <div class="food-stats-grid" id="food-stats-grid">
+      <div class="no-data">
+        <h3>📊 Đang tải thống kê...</h3>
+        <p>Vui lòng chọn mốc thời gian</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="thongke.js"></script>
+</body>
+</html>
