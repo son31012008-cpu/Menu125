@@ -1,13 +1,13 @@
 import { db, customerId, doc, onSnapshot } from './firebase-config.js';
 
-console.log("✅ Main.js loaded");
+console.log("✅ Đang tải menu Tết...");
 
-// ========== CHỌN BÀN ==========
+// ========== XỬ LÝ CHỌN BÀN ==========
 let tableNumber = localStorage.getItem('tableNumber');
 
 if (!tableNumber) {
   document.getElementById('authContainer').style.display = 'flex';
-  document.getElementById('menuSection').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'none';
   
   document.getElementById('startBtn').addEventListener('click', () => {
     const selected = document.getElementById('tableSelect').value;
@@ -19,15 +19,15 @@ if (!tableNumber) {
     location.reload();
   });
 } else {
-  // Đã chọn bàn → hiện menu
   document.getElementById('authContainer').style.display = 'none';
-  document.getElementById('menuSection').style.display = 'block';
-  document.getElementById('customerInfo').innerHTML = `Bàn: <strong>${tableNumber}</strong> | ID: ${customerId}`;
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('customerInfo').innerHTML = 
+    `Bàn: <strong style="color:#FFD700;">${tableNumber}</strong> | ID: ${customerId}`;
   
   loadMenu();
 }
 
-// ========== TẢI MÓN ĂN ==========
+// ========== TẢI MÓN ĂN TỪ FIREBASE ==========
 function loadMenu() {
   const foodRef = doc(db, 'foodData', 'Number1');
   
@@ -35,7 +35,7 @@ function loadMenu() {
     if (doc.exists()) {
       const food = doc.data();
       if (typeof food.price !== 'number') {
-        console.error("❌ Price phải là NUMBER!");
+        console.error("❌ Price phải là NUMBER trong Firebase!");
         return;
       }
       renderFoodCard(food);
@@ -45,19 +45,21 @@ function loadMenu() {
   });
 }
 
+// ========== RENDER THẺ MÓN ĂN ==========
 function renderFoodCard(food) {
   const container = document.getElementById('foodGrid');
   container.innerHTML = `
     <div class="food-card" onclick="location.href='detail.html?id=Number1'">
-      <div class="food-info" style="padding: 25px;">
+      <div class="food-info">
         <h3 class="food-name">${food.name}</h3>
         <p class="food-description">${food.description}</p>
         <div class="food-price">${food.price.toLocaleString()}đ</div>
-        <div id="rating-Number1" class="rating-container"></div>
+        <div id="rating-Number1" class="rating-display"></div>
       </div>
     </div>
   `;
 
+  // Load đánh giá realtime
   const ratingRef = doc(db, 'foodRatings', 'Number1');
   onSnapshot(ratingRef, (ratingDoc) => {
     const data = ratingDoc.data() || { average: 0, count: 0 };
@@ -65,7 +67,7 @@ function renderFoodCard(food) {
   });
 }
 
-// ========== RENDER SAO THEO DỮ LIỆU ==========
+// ========== RENDER SAO CHÍNH XÁC THEO DỮ LIỆU ==========
 function renderStars(containerId, average, count) {
   const container = document.getElementById(containerId);
   const avg = average || 0;
@@ -94,13 +96,13 @@ function renderStars(containerId, average, count) {
     }
   }
   
-  // SAO RỖNG
+  // SAO RỖNG CÒN LẠI
   const totalRendered = Math.ceil(avg);
   for (let i = totalRendered; i < 5; i++) {
     html += '<span class="star-rating star-0">★</span>';
   }
   
-  html += ` <span style="color: #FFD700; font-size: 14px;">(${count || 0})</span>`;
+  html += ` <span style="color:#FFD700; font-size:14px; margin-left:8px;">(${count || 0})</span>`;
   container.innerHTML = html;
 }
 
@@ -114,21 +116,30 @@ function updateCartCount() {
   }
 }
 
-window.addEventListener('load', () => {
-  updateCartCount();
-  
-  // Hiệu ứng hoa rơi
+// ========== HOẠT ẢNH HOA RƠI ==========
+function createFlowers() {
   const container = document.getElementById('flowerContainer');
-  if (container) {
-    const flowers = ['🌸', '🌺', '🌼', '🌻'];
-    setInterval(() => {
-      const flower = document.createElement('div');
-      flower.className = 'flower';
-      flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
-      flower.style.left = Math.random() * 100 + '%';
-      flower.style.animationDuration = (Math.random() * 3 + 5) + 's';
-      container.appendChild(flower);
-      setTimeout(() => flower.remove(), 8000);
-    }, 500);
-  }
+  const flowers = ['🌸', '🌺', '🌼', '🌻', '🌹', '🌷', '🌵'];
+  
+  setInterval(() => {
+    const flower = document.createElement('div');
+    flower.className = 'flower';
+    flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+    flower.style.left = Math.random() * 100 + '%';
+    flower.style.animationDuration = (Math.random() * 3 + 5) + 's';
+    flower.style.animationDelay = Math.random() * 2 + 's';
+    container.appendChild(flower);
+    
+    setTimeout(() => {
+      if (flower.parentNode) {
+        flower.remove();
+      }
+    }, (parseFloat(flower.style.animationDuration) + parseFloat(flower.style.animationDelay)) * 1000);
+  }, 500);
+}
+
+// Khởi tạo khi load trang
+window.addEventListener('load', () => {
+  createFlowers();
+  updateCartCount();
 });
