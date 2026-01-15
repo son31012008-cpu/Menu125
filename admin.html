@@ -36,6 +36,27 @@
       color: #7f8c8d;
     }
 
+    /* THÊM: Link tới trang thống kê */
+    .admin-header .actions {
+      text-align: right;
+      margin-top: 15px;
+    }
+    
+    .btn-link {
+      background: #3498db;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-left: 10px;
+      transition: background 0.3s;
+    }
+    
+    .btn-link:hover {
+      background: #2980b9;
+    }
+
     /* TAB NAVIGATION */
     .tab-navigation {
       display: flex;
@@ -142,6 +163,56 @@
     .order-summary-card .order-total {
       margin-top: 10px;
       font-size: 18px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    
+    /* THỐNG KÊ MÓN ĂN - Tab mới */
+    .statistics-container {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .statistics-list {
+      display: grid;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border-left: 5px solid #e74c3c;
+    }
+    
+    .stat-item .food-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .stat-item .food-icon {
+      font-size: 40px;
+    }
+    
+    .stat-item .food-name {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .stat-item .food-category {
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+    
+    .stat-item .quantity {
+      font-size: 28px;
       font-weight: bold;
       color: #e74c3c;
     }
@@ -320,6 +391,11 @@
     <div class="admin-header">
       <h1>🍳 QUẢN LÝ ĐƠN HÀNG - BẾP</h1>
       <p>Bếp trưởng: <span id="adminId">Bếp trưởng</span></p>
+      
+      <!-- THÊM: Link tới trang thống kê chi tiết -->
+      <div class="actions">
+        <a href="thongke.html" class="btn-link">📊 Xem thống kê món ăn</a>
+      </div>
     </div>
 
     <!-- TAB NAVIGATION -->
