@@ -1,4 +1,5 @@
 import { db, customerId, doc, setDoc, updateDoc, increment, showToast } from './firebase-config.js';
+import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let cart = [];
 let totalAmount = 0;
@@ -34,6 +35,8 @@ async function initCart() {
 // ============================================
 function renderCart() {
   const cartContainer = document.getElementById('cartItems');
+  if (!cartContainer) return;
+  
   cartContainer.innerHTML = cart.map(item => `
     <div class="cart-item">
       <span>${item.icon} ${item.name}</span>
@@ -48,7 +51,10 @@ function renderCart() {
 // ============================================
 function calculateTotal() {
   totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  document.getElementById('totalAmount').textContent = `${totalAmount.toLocaleString()}đ`;
+  const totalEl = document.getElementById('totalAmount');
+  if (totalEl) {
+    totalEl.textContent = `${totalAmount.toLocaleString()}đ`;
+  }
 }
 
 // ============================================
@@ -74,21 +80,29 @@ function showConfirmModal(orderData, callback) {
   pendingOrderCallback = callback;
   
   const summaryEl = document.getElementById('orderSummary');
-  summaryEl.innerHTML = `
-    <strong>Khách:</strong> ${orderData.customerName}<br>
-    <strong>Bàn:</strong> ${orderData.tableNumber}<br>
-    <strong>Tổng:</strong> ${orderData.totalAmount.toLocaleString()}đ<br>
-    <strong>Số món:</strong> ${orderData.items.length}<br>
-    <hr>
-    <strong>Chi tiết:</strong><br>
-    ${orderData.items.map(item => `${item.name} x${item.quantity}`).join('<br>')}
-  `;
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <strong>Khách:</strong> ${orderData.customerName}<br>
+      <strong>Bàn:</strong> ${orderData.tableNumber}<br>
+      <strong>Tổng:</strong> ${orderData.totalAmount.toLocaleString()}đ<br>
+      <strong>Số món:</strong> ${orderData.items.length}<br>
+      <hr>
+      <strong>Chi tiết:</strong><br>
+      ${orderData.items.map(item => `${item.name} x${item.quantity}`).join('<br>')}
+    `;
+  }
   
-  document.getElementById('confirmModal').classList.add('show');
+  const modal = document.getElementById('confirmModal');
+  if (modal) {
+    modal.classList.add('show');
+  }
 }
 
 function closeConfirmModal() {
-  document.getElementById('confirmModal').classList.remove('show');
+  const modal = document.getElementById('confirmModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
   pendingOrderCallback = null;
 }
 
@@ -135,16 +149,14 @@ async function sendOrderToFirebase(orderData) {
 // SETUP SỰ KIỆN
 // ============================================
 function setupEventListeners() {
-  const sendBtn = document.getElementById('placeOrder'); // ĐỔI TÊN NÚT CHO ĐÚNG HTML
+  const sendBtn = document.getElementById('placeOrder');
   
   if (sendBtn) {
     sendBtn.addEventListener('click', () => {
-      // LẤY THÔNG TIN TỪ HTML (NẾU CÓ)
-      const tableNumberEl = document.getElementById('tableNumber');
-      const customerNameEl = document.getElementById('customerName');
-      
-      const tableNumber = tableNumberEl?.value || 'Bàn không xác định';
-      const customerName = customerNameEl?.value || 'Khách vãng lai';
+      // Lấy thông tin từ URL hoặc mặc định
+      const urlParams = new URLSearchParams(window.location.search);
+      const tableNumber = urlParams.get('table') || 'Bàn không xác định';
+      const customerName = `KH${Date.now()}`;
       
       if (cart.length === 0) {
         showToast('Giỏ hàng trống!', 'error');
@@ -157,7 +169,8 @@ function setupEventListeners() {
         items: [...cart],
         totalAmount: totalAmount,
         timestamp: Date.now(),
-        status: 'pending'
+        status: 'pending',
+        customerId: customerId
       };
       
       // ✅ DÙNG MODAL THAY VÌ confirm()
