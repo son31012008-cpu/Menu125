@@ -7,6 +7,7 @@ if (!foodId) location.href = 'index.html';
 
 const foodRef = doc(db, 'foodData', foodId);
 
+// ✅ ĐÃ SỬA: Xóa dấu ) thừa
 onSnapshot(foodRef, (doc) => {
   const food = doc.data();
   
@@ -60,7 +61,7 @@ getDoc(userRatingRef).then(docSnap => {
     const data = doc.data() || { average: 0, count: 0 };
     document.getElementById('stats').innerHTML = `
       <p>⭐ Trung bình: <strong>${(data.average || 0).toFixed(1)}</strong> / 5.0</p>
-      <p>👥 Tổng: <strong>${data.count || 0}</strong></p>
+      <p>👥 Tổng: <strong>${data.count || 0}</strong> đánh giá</p>
     `;
   });
 });
@@ -124,7 +125,3 @@ function setupCart(food) {
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
-
-
-
-
