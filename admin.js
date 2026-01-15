@@ -19,11 +19,9 @@ function setupTabEvents() {
   const tabButtons = document.querySelectorAll('.tab-btn');
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Xóa active tất cả tab
       tabButtons.forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       
-      // Active tab được chọn
       btn.classList.add('active');
       currentStatus = btn.dataset.status;
       document.getElementById(`${currentStatus}-tab`).classList.add('active');
@@ -32,10 +30,9 @@ function setupTabEvents() {
 }
 
 // ============================================
-// LOAD ĐƠN HÀNG REALTIME - KHÔNG CẦN COMPOSITE INDEX
+// LOAD ĐƠN HÀNG REALTIME
 // ============================================
 function loadOrders() {
-  // Lắng nghe riêng từng trạng thái
   listenToPendingOrders();
   listenToPreparingOrders();
   listenToCompletedOrders();
@@ -84,7 +81,7 @@ function listenToCompletedOrders() {
 }
 
 // ============================================
-// RENDER ORDERS THEO STATUS
+// RENDER ORDERS
 // ============================================
 function renderOrders(status, orders) {
   if (status === 'completed') {
@@ -141,7 +138,7 @@ function renderCompletedOrders(orders) {
 }
 
 // ============================================
-// HIỂN THỊ CHI TIẾT ĐƠN HÀNG
+// HIỂN THỊ CHI TIẾT
 // ============================================
 window.showOrderDetail = function(orderId) {
   const status = currentStatus;
@@ -166,7 +163,6 @@ function renderDetailBox(order) {
   const content = document.getElementById('detailContent');
   const actions = document.getElementById('detailActions');
   
-  // Nội dung chi tiết
   content.innerHTML = `
     <div class="detail-grid">
       <div class="detail-item">
@@ -201,10 +197,8 @@ function renderDetailBox(order) {
     </div>
   `;
   
-  // Render nút hành động
   actions.innerHTML = renderDetailActions(order);
   
-  // Hiện modal
   overlay.classList.add('show');
   detailBox.classList.add('show');
 }
@@ -224,8 +218,8 @@ function renderDetailActions(order) {
       <button class="btn-action btn-finish" onclick="updateOrderStatus('${order.id}', 'completed')">
         ✅ Hoàn thành
       </button>
-      <button class="btn-action btn-back" onclick="updateOrderStatus('${order.id}', 'pending')">
-        ↩️ Đưa về chờ
+      <button class="btn-action btn-back" onclick="closeDetailBox()">
+        ↩️ Đóng
       </button>
     `;
   }
@@ -239,28 +233,30 @@ window.closeDetailBox = function() {
 }
 
 // ============================================
-// CẬP NHẬT TRẠNG THÁI
+// UPDATE STATUS
 // ============================================
 window.updateOrderStatus = function(orderId, status) {
   const orderRef = doc(db, 'orders', orderId);
-  const updateData = { status: status };
+  const updateData = { 
+    status: status,
+    updatedAt: new Date().toISOString()
+  };
   
-  // Ghi thời gian hoàn thành nếu chuyển sang completed
   if (status === 'completed') {
     updateData.completedAt = new Date().toISOString();
   }
   
   updateDoc(orderRef, updateData).then(() => {
-    showToast('Cập nhật trạng thái thành công!', 'success');
+    showToast('Cập nhật thành công!', 'success');
     closeDetailBox();
   }).catch(error => {
-    console.error("❌ Lỗi cập nhật:", error);
+    console.error("❌ Lỗi:", error);
     showToast('Có lỗi khi cập nhật!', 'error');
   });
 }
 
 // ============================================
-// UPDATE BADGE COUNT
+// UPDATE BADGE
 // ============================================
 function updateBadge(status, count) {
   const badge = document.getElementById(`${status}-badge`);
@@ -271,7 +267,7 @@ function updateBadge(status, count) {
 }
 
 // ============================================
-// HELPER FUNCTIONS
+// HELPERS
 // ============================================
 function getStatusText(status) {
   const statuses = {
@@ -283,7 +279,7 @@ function getStatusText(status) {
 }
 
 // ============================================
-// HÀM SHOW TOAST (NẾU CHƯA CÓ)
+// SHOW TOAST
 // ============================================
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer') || (() => {
