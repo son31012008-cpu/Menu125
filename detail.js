@@ -7,7 +7,7 @@ if (!foodId) location.href = 'index.html';
 
 const foodRef = doc(db, 'foodData', foodId);
 
-onSnapshot(foodRef, (doc) => {
+onSnapshot(foodRef, (doc) )=> {
   const food = doc.data();
   
   document.getElementById('foodDetail').innerHTML = `
@@ -124,4 +124,5 @@ function setupCart(food) {
     setTimeout(() => location.href = 'index.html', 1500);
   });
 }
+
 
