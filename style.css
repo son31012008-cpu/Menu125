@@ -197,3 +197,102 @@ body { font-family: 'Noto Serif JP', serif; background: linear-gradient(135deg, 
   font-weight: bold;
   font-size: 12px;
 }
+/* ========== THÔNG BÁO ĐẸP - TOAST NOTIFICATION ========== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: white;
+  border-radius: 15px;
+  padding: 20px 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 300px;
+  max-width: 400px;
+  transform: translateX(400px);
+  animation: slideIn 0.4s ease forwards, slideOut 0.4s ease 3s forwards;
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 5px; height: 100%;
+  background: linear-gradient(to bottom, #FFD700, #FF6347);
+}
+
+@keyframes slideIn {
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  to { transform: translateX(400px); opacity: 0; }
+}
+
+.toast-icon {
+  font-size: 28px;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.toast-message {
+  font-size: 14px;
+  color: #666;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s;
+}
+
+.toast-close:hover {
+  color: #333;
+}
+
+/* Màu sắc theo loại thông báo */
+.toast-success { border-left: 5px solid #4CAF50; }
+.toast-success .toast-icon { color: #4CAF50; }
+
+.toast-error { border-left: 5px solid #DC143C; }
+.toast-error .toast-icon { color: #DC143C; }
+
+.toast-warning { border-left: 5px solid #FF9800; }
+.toast-warning .toast-icon { color: #FF9800; }
+
+.toast-info { border-left: 5px solid #2196F3; }
+.toast-info .toast-icon { color: #2196F3; }
+
+/* Hiệu ứng Tết cho thông báo */
+.toast-tet {
+  background: linear-gradient(135deg, #fff, #fff9e6);
+  border: 2px solid #FFD700;
+}
+
+.toast-tet::before {
+  background: linear-gradient(to bottom, #FFD700, #FF6347);
+}
