@@ -1,13 +1,10 @@
-import { db, customerId, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from './firebase-config.js';
-
+import { db, customerId, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, showToast } from './firebase-config.js';
 const urlParams = new URLSearchParams(window.location.search);
 const foodId = urlParams.get('id');
 
 if (!foodId) location.href = 'index.html';
 
 const foodRef = doc(db, 'foodData', foodId);
-
-onSnapshot(foodRef, (doc) => {
   const food = doc.data();
   
   document.getElementById('foodDetail').innerHTML = `
@@ -182,4 +179,5 @@ function createFlowers() {
 }
 
 createFlowers();
+
 
