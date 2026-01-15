@@ -1,5 +1,5 @@
-import { db, doc, onSnapshot, updateDoc } from './firebase-config.js';
-import { collection, query, where, orderBy, onSnapshot as onSnapshotCollection } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { db, doc, updateDoc } from './firebase-config.js';
+import { collection, query, where, orderBy, onSnapshot, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let currentStatus = 'pending';
 let selectedOrder = null;
@@ -32,33 +32,54 @@ function setupTabEvents() {
 }
 
 // ============================================
-// LOAD ĐƠN HÀNG REALTIME
+// LOAD ĐƠN HÀNG REALTIME - KHÔNG CẦN COMPOSITE INDEX
 // ============================================
 function loadOrders() {
-  // Lắng nghe 3 collections
-  listenToOrders('pending');
-  listenToOrders('preparing');
-  listenToOrders('completed');
+  // Lắng nghe riêng từng trạng thái
+  listenToPendingOrders();
+  listenToPreparingOrders();
+  listenToCompletedOrders();
 }
 
-function listenToOrders(status) {
+function listenToPendingOrders() {
   const ordersRef = collection(db, 'orders');
-  let q;
+  const q = query(ordersRef, where('status', '==', 'pending'), orderBy('timestamp', 'asc'));
   
-  if (status === 'completed') {
-    q = query(ordersRef, where('status', '==', status), orderBy('completedAt', 'desc'), limit(50));
-  } else {
-    q = query(ordersRef, where('status', '==', status), orderBy('timestamp', 'asc'));
-  }
+  onSnapshot(q, (snapshot) => {
+    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderOrders('pending', orders);
+    updateBadge('pending', orders.length);
+  }, (error) => {
+    console.error("❌ Lỗi load pending:", error);
+    showToast('Không thể tải đơn chờ xử lý!', 'error');
+  });
+}
+
+function listenToPreparingOrders() {
+  const ordersRef = collection(db, 'orders');
+  const q = query(ordersRef, where('status', '==', 'preparing'), orderBy('timestamp', 'asc'));
   
-  onSnapshotCollection(q, (snapshot) => {
-    const orders = [];
-    snapshot.forEach(doc => {
-      orders.push({ id: doc.id, ...doc.data() });
-    });
-    
-    renderOrders(status, orders);
-    updateBadge(status, orders.length);
+  onSnapshot(q, (snapshot) => {
+    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderOrders('preparing', orders);
+    updateBadge('preparing', orders.length);
+  }, (error) => {
+    console.error("❌ Lỗi load preparing:", error);
+    showToast('Không thể tải đơn đang nấu!', 'error');
+  });
+}
+
+function listenToCompletedOrders() {
+  const ordersRef = collection(db, 'orders');
+  const q = query(ordersRef, where('status', '==', 'completed'), orderBy('completedAt', 'desc'), limit(50));
+  
+  onSnapshot(q, (snapshot) => {
+    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderOrders('completed', orders);
+    updateBadge('completed', orders.length);
+  }, (error) => {
+    console.error("❌ Lỗi load completed:", error);
+    showToast('Không thể tải đơn hoàn thành!', 'error');
   });
 }
 
@@ -127,13 +148,15 @@ window.showOrderDetail = function(orderId) {
   const ordersRef = collection(db, 'orders');
   const q = query(ordersRef, where('__name__', '==', orderId));
   
-  // Lấy 1 đơn
   getDocs(q).then(snapshot => {
     if (!snapshot.empty) {
       const order = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
       selectedOrder = order;
       renderDetailBox(order);
     }
+  }).catch(error => {
+    console.error("❌ Lỗi tải chi tiết:", error);
+    showToast('Không thể tải chi tiết đơn hàng!', 'error');
   });
 }
 
@@ -143,16 +166,17 @@ function renderDetailBox(order) {
   const content = document.getElementById('detailContent');
   const actions = document.getElementById('detailActions');
   
-  // Hiển thị ID khách hàng, số bàn, chi tiết, giờ đặt
+  // Nội dung chi tiết
   content.innerHTML = `
     <div class="detail-grid">
       <div class="detail-item">
-        <strong>🧑 Khách hàng:</strong>
+        <strong>🧑 Khách hàng:</strong><br>
         ${order.customerName || 'Khách vãng lai'}<br>
         <small>ID: ${order.customerId || 'N/A'}</small>
       </div>
       <div class="detail-item">
-        <strong>🪑 Số bàn:</strong> ${order.tableNumber}<br>
+        <strong>🪑 Số bàn:</strong><br>
+        ${order.tableNumber}<br>
         <small>#${order.orderNumber}</small>
       </div>
       <div class="detail-item">
@@ -177,7 +201,7 @@ function renderDetailBox(order) {
     </div>
   `;
   
-  // Render nút hành động theo trạng thái
+  // Render nút hành động
   actions.innerHTML = renderDetailActions(order);
   
   // Hiện modal
@@ -192,7 +216,7 @@ function renderDetailActions(order) {
         🔥 Bắt đầu nấu
       </button>
       <button class="btn-action btn-back" onclick="closeDetailBox()">
-        ↩️ Quay lại
+        ↩️ Đóng
       </button>
     `;
   } else if (order.status === 'preparing') {
@@ -219,12 +243,9 @@ window.closeDetailBox = function() {
 // ============================================
 window.updateOrderStatus = function(orderId, status) {
   const orderRef = doc(db, 'orders', orderId);
-  const updateData = {
-    status: status,
-    updatedAt: new Date().toISOString()
-  };
+  const updateData = { status: status };
   
-  // Nếu chuyển sang completed, ghi thời gian hoàn thành
+  // Ghi thời gian hoàn thành nếu chuyển sang completed
   if (status === 'completed') {
     updateData.completedAt = new Date().toISOString();
   }
@@ -262,6 +283,25 @@ function getStatusText(status) {
 }
 
 // ============================================
-// KHỞI TẠO
+// HÀM SHOW TOAST (NẾU CHƯA CÓ)
 // ============================================
-loadOrders();
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer') || (() => {
+    const c = document.createElement('div');
+    c.id = 'toastContainer';
+    c.className = 'toast-container';
+    document.body.appendChild(c);
+    return c;
+  })();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
