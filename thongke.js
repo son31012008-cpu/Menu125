@@ -7,6 +7,7 @@ import {
 // Tham số toàn cục
 let currentFilter = 'today';
 let foodDataCache = {};
+let ordersListener = null;
 
 // ========== LOAD THỐNG KÊ ==========
 function loadStatistics(period = 'today') {
@@ -19,6 +20,14 @@ function loadStatistics(period = 'today') {
       btn.classList.add('active');
     }
   });
+
+  // Cleanup listener cũ
+  if (ordersListener) {
+    ordersListener();
+    ordersListener = null;
+  }
+
+  showLoading();
 
   const ordersRef = collection(db, 'orders');
   let startTime = new Date();
@@ -44,12 +53,13 @@ function loadStatistics(period = 'today') {
     where('status', '==', 'completed')
   );
 
-  onSnapshot(q, (snapshot) => {
-    console.log(`✅ Tìm thấy ${snapshot.docs.length} đơn hoàn thành`);
+  ordersListener = onSnapshot(q, (snapshot) => {
+    console.log(`📊 REALTIME: ${snapshot.docs.length} đơn mới`);
     processStatistics(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
-    console.error("❌ Lỗi load thống kê:", error);
+    console.error("❌ Lỗi Firebase:", error);
     showToast('Không thể tải thống kê!');
+    hideLoading();
   });
 }
 
@@ -92,6 +102,7 @@ async function processStatistics(orders) {
 
   renderSummary(totalRevenue, totalItems, orders.length);
   renderFoodStats(sortedStats);
+  hideLoading();
 }
 
 // ========== RENDER TỔNG QUAN ==========
@@ -100,19 +111,19 @@ function renderSummary(totalRevenue, totalItems, totalOrders) {
   if (!container) return;
   
   container.innerHTML = `
-    <div class="summary-card">
+    <div class="summary-card realtime-card">
       <h3>💰 Tổng doanh thu</h3>
       <div class="value">${totalRevenue.toLocaleString()}đ</div>
     </div>
-    <div class="summary-card" style="background: linear-gradient(135deg, #27ae60, #229954);">
+    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #27ae60, #229954);">
       <h3>🍽️ Tổng món đã bán</h3>
       <div class="value">${totalItems}</div>
     </div>
-    <div class="summary-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
       <h3>📋 Tổng đơn hàng</h3>
       <div class="value">${totalOrders}</div>
     </div>
-    <div class="summary-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
       <h3>📊 Trung bình/đơn</h3>
       <div class="value">${totalOrders > 0 ? Math.round(totalRevenue / totalOrders).toLocaleString() : 0}đ</div>
     </div>
@@ -135,7 +146,7 @@ function renderFoodStats(stats) {
   }
   
   container.innerHTML = stats.map(([name, data]) => `
-    <div class="stat-card">
+    <div class="stat-card realtime-card">
       <div class="stat-header">
         <div class="stat-icon">${data.icon}</div>
         <div class="stat-info">
@@ -154,6 +165,23 @@ function renderFoodStats(stats) {
   `).join('');
 }
 
+// ========== SHOW/HIDE LOADING ==========
+function showLoading() {
+  const container = document.getElementById('food-stats-grid');
+  if (container) {
+    container.innerHTML = `
+      <div class="no-data">
+        <h3>⏳ Đang tải dữ liệu...</h3>
+        <p>Vui lòng đợi trong giây lát</p>
+      </div>
+    `;
+  }
+}
+
+function hideLoading() {
+  // Không cần làm gì, renderFoodStats sẽ thay thế nội dung
+}
+
 // ========== KHỞI TẠO ==========
 document.addEventListener('DOMContentLoaded', () => {
   // Gắn sự kiện cho filter buttons
@@ -168,5 +196,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadStatistics('today');
 });
 
-// Export ra global
+// ⭐⭐⭐ FIX QUAN TRỌNG: EXPORT RA GLOBAL SCOPE⭐⭐⭐
 window.loadStatistics = loadStatistics;
+
+// Thêm CSS pulse animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes pulse {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  .realtime-card {
+    transition: all 0.3s ease;
+  }
+`;
+document.head.appendChild(style);
