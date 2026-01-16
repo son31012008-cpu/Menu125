@@ -1,5 +1,5 @@
 import { db, customerId, showToast } from './firebase-config.js';
-import { collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, query, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 console.log("✅ Đang tải menu Tết...");
 console.log("📌 Customer ID:", customerId);
@@ -32,7 +32,7 @@ if (!tableNumber) {
   loadAllFoods();
 }
 
-// ========== TẢI TẤT CẢ MÓN ĂN TỪ FIREBASE ==========
+// ========== TẢI TẤT CẢ MÓN ĂN ==========
 function loadAllFoods() {
   const menuContainer = document.getElementById('menuContainer');
   if (!menuContainer) {
@@ -43,10 +43,8 @@ function loadAllFoods() {
 
   console.log("🔄 Đang load từ collection: foodData");
   
-  // ✅ BỎ where để lấy TẤT CẢ món
+  // BỎ where để lấy tất cả
   const foodsRef = collection(db, 'foodData');
-  
-  // Query đơn giản - không lọc available
   const q = query(foodsRef);
   
   onSnapshot(q, (snapshot) => {
@@ -57,13 +55,13 @@ function loadAllFoods() {
     
     snapshot.docs.forEach(doc => {
       const food = { id: doc.id, ...doc.data() };
-      console.log("📄 Món:", food.name, "Price:", food.price);
+      console.log("📄 Món:", food.name);
       foods.push(food);
       if (food.category) categories.add(food.category);
     });
     
     if (foods.length === 0) {
-      console.warn("⚠️ Không có món ăn nào trong Firebase!");
+      console.warn("⚠️ Không có món ăn nào!");
       showToast('Chưa có món ăn nào trong menu!');
       return;
     }
@@ -82,13 +80,9 @@ function loadAllFoods() {
 // ========== RENDER THEO CATEGORY ==========
 function renderFoodsByCategory(foods, categories) {
   const menuContainer = document.getElementById('menuContainer');
-  if (!menuContainer) {
-    showToast('Lỗi hiển thị menu!');
-    return;
-  }
+  if (!menuContainer) return;
   
   menuContainer.innerHTML = '';
-  console.log("📊 Số category:", categories.length, "Categories:", categories);
   
   categories.forEach(category => {
     const section = document.createElement('section');
@@ -102,8 +96,6 @@ function renderFoodsByCategory(foods, categories) {
     const categoryFoods = foods.filter(food => 
       (food.category || 'Món chính') === category
     );
-    
-    console.log(`📂 Category ${category}: ${categoryFoods.length} món`);
     
     const foodGrid = document.createElement('div');
     foodGrid.className = 'food-grid';
@@ -126,6 +118,7 @@ function renderFoodsByCategory(foods, categories) {
     section.appendChild(foodGrid);
     menuContainer.appendChild(section);
     
+    // ✅ GẮN SỰ KIỆN CHO TỪNG MÓN
     categoryFoods.forEach(food => {
       const foodCard = document.getElementById(`food-${food.id}`);
       if (foodCard) {
@@ -138,7 +131,7 @@ function renderFoodsByCategory(foods, categories) {
   });
 }
 
-// ========== LOAD RATING CHO TỪNG MÓN ==========
+// ========== LOAD RATING ==========
 function loadFoodRating(foodId) {
   const ratingRef = doc(db, 'foodRatings', foodId);
   onSnapshot(ratingRef, (ratingDoc) => {
@@ -160,11 +153,11 @@ function renderStars(containerId, average, count) {
     html += `<span class="star-rating ${i < fullStars ? 'star-100' : 'star-0'}">★</span>`;
   }
   
-  html += ` <span style="color:#FFD700; font-size:14px; margin-left:8px;">(${count || 0})</span>`;
+  html += ` <span style="color:#FFD700; font-size:14px;">(${count || 0})</span>`;
   container.innerHTML = html;
 }
 
-// ========== CẬP NHẬT SỐ LƯỢNG GIỎ HÀNG ==========
+// ========== CẬP NHẬT GIỎ HÀNG ==========
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -174,7 +167,7 @@ function updateCartCount() {
   }
 }
 
-// ========== HOẠT ẢNH HOA RƠI ==========
+// ========== HOA RƠI ==========
 function createFlowers() {
   const container = document.getElementById('flowerContainer');
   if (!container) return;
@@ -197,7 +190,7 @@ function createFlowers() {
   }, 500);
 }
 
-// ========== SETUP SỰ KIỆN ==========
+// ========== SETUP ==========
 function setupEventListeners() {
   const cartFloat = document.getElementById('cartFloat');
   if (cartFloat) {
