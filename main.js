@@ -1,7 +1,8 @@
 import { db, customerId, showToast } from './firebase-config.js';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 console.log("✅ Đang tải menu Tết...");
+console.log("📌 Customer ID:", customerId);
 
 // ========== XỬ LÝ CHỌN BÀN ==========
 let tableNumber = localStorage.getItem('tableNumber');
@@ -40,18 +41,32 @@ function loadAllFoods() {
     return;
   }
 
+  console.log("🔄 Đang load từ collection: foodData");
+  
+  // ✅ BỎ where để lấy TẤT CẢ món
   const foodsRef = collection(db, 'foodData');
-  const q = query(foodsRef, where('available', '==', true));
+  
+  // Query đơn giản - không lọc available
+  const q = query(foodsRef);
   
   onSnapshot(q, (snapshot) => {
+    console.log(`✅ Tìm thấy ${snapshot.docs.length} món ăn`);
+    
     const foods = [];
     const categories = new Set();
     
     snapshot.docs.forEach(doc => {
       const food = { id: doc.id, ...doc.data() };
+      console.log("📄 Món:", food.name, "Price:", food.price);
       foods.push(food);
       if (food.category) categories.add(food.category);
     });
+    
+    if (foods.length === 0) {
+      console.warn("⚠️ Không có món ăn nào trong Firebase!");
+      showToast('Chưa có món ăn nào trong menu!');
+      return;
+    }
     
     if (categories.size === 0) {
       categories.add('Món chính');
@@ -59,8 +74,8 @@ function loadAllFoods() {
     
     renderFoodsByCategory(foods, Array.from(categories));
   }, (error) => {
-    console.error("❌ Lỗi load món ăn:", error);
-    showToast('Không thể tải menu!');
+    console.error("❌ Lỗi Firestore:", error);
+    showToast('Không thể tải menu: ' + error.message);
   });
 }
 
@@ -73,6 +88,7 @@ function renderFoodsByCategory(foods, categories) {
   }
   
   menuContainer.innerHTML = '';
+  console.log("📊 Số category:", categories.length, "Categories:", categories);
   
   categories.forEach(category => {
     const section = document.createElement('section');
@@ -87,12 +103,13 @@ function renderFoodsByCategory(foods, categories) {
       (food.category || 'Món chính') === category
     );
     
+    console.log(`📂 Category ${category}: ${categoryFoods.length} món`);
+    
     const foodGrid = document.createElement('div');
     foodGrid.className = 'food-grid';
     
-    // ✅ THÊM NULL CHECK Ở ĐÂY
     if (categoryFoods.length === 0) {
-      foodGrid.innerHTML = '<p style="text-align:center; color:#666;">Chưa có món nào trong danh mục này.</p>';
+      foodGrid.innerHTML = '<p style="text-align:center; color:#666;">Chưa có món nào.</p>';
     } else {
       foodGrid.innerHTML = categoryFoods.map(food => `
         <div class="food-card" data-id="${food.id}" id="food-${food.id}">
@@ -109,7 +126,6 @@ function renderFoodsByCategory(foods, categories) {
     section.appendChild(foodGrid);
     menuContainer.appendChild(section);
     
-    // ✅ GẮN SỰ KIỆN AN TOÀN HƠN
     categoryFoods.forEach(food => {
       const foodCard = document.getElementById(`food-${food.id}`);
       if (foodCard) {
