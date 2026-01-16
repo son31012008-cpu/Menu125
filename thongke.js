@@ -1,32 +1,40 @@
-// Import Firebase SDK
+// Import Firebase SDK - Sửa dấu cách thừa
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, query, get, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// Cấu hình Firebase
+// Cấu hình Firebase MỚI - KHÔNG DẤU CÁCH
 const firebaseConfig = {
-  apiKey: "AIzaSyCeD7qFkQKgg4rCTvJTY02l2JNUqy5P9Ag",
-  authDomain: "beptiendungnam.firebaseapp.com",
-  databaseURL: "https://beptiendungnam-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "beptiendungnam",
-  storageBucket: "beptiendungnam.appspot.com",
-  messagingSenderId: "1028539429806",
-  appId: "1:1028539429806:web:3e16a9b040df7d3a6c4dc7",
-  measurementId: "G-GX0QKJKYZX"
+  apiKey: "AIzaSyADHGSv4xwRrqP-ia5WZUWs6GHchtpEYSc",
+  authDomain: "menu-vhdg.firebaseapp.com",
+  databaseURL: "https://menu-vhdg-default-rtdb.asia-southeast1.firebasedatabase.app", // ✅ ĐÃ SỬA
+  projectId: "menu-vhdg",
+  storageBucket: "menu-vhdg.firebasestorage.app",
+  messagingSenderId: "486523234627",
+  appId: "1:486523234627:web:c25a8970015f77599627f6",
+  measurementId: "G-Z7T04FE180"
 };
 
 // Khởi tạo Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// CÁC HÀM THỐNG KÊ
+// Debug: Kiểm tra URL đã đúng chưa
+console.log("✅ Firebase URL:", firebaseConfig.databaseURL);
+
+// Test kết nối database
+get(ref(db, '/')).then(snapshot => {
+  console.log("✅ Kết nối thành công! Database có dữ liệu:", snapshot.exists());
+}).catch(error => {
+  console.error("❌ Lỗi kết nối database:", error);
+});
+
+// ==================== CÁC HÀM THỐNG KÊ ====================
 let currentPeriod = 'today';
 
-// Hàm format số tiền
 function formatCurrency(amount) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 }
 
-// Hàm lấy thời gian bắt đầu theo chu kỳ
 function getStartTime(period) {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -45,7 +53,6 @@ function getStartTime(period) {
   }
 }
 
-// Hàm lấy dữ liệu từ Firebase thay vì localStorage
 async function getOrderDataFromFirebase() {
   try {
     const ordersRef = ref(db, 'orders');
@@ -72,7 +79,6 @@ async function getOrderDataFromFirebase() {
   }
 }
 
-// Hàm tính toán thống kê theo món
 function calculateFoodStats(orders, period) {
   const startTime = getStartTime(period);
   const filteredOrders = orders.filter(order => order.timestamp >= startTime);
@@ -120,7 +126,6 @@ function calculateFoodStats(orders, period) {
   };
 }
 
-// Hàm render tổng quan
 function renderSummary(summary) {
   const summaryContainer = document.getElementById('statistics-summary');
   summaryContainer.innerHTML = `
@@ -143,7 +148,6 @@ function renderSummary(summary) {
   `;
 }
 
-// Hàm render danh sách món ăn
 function renderFoodStats(foodStats) {
   const gridContainer = document.getElementById('food-stats-grid');
   
@@ -157,7 +161,6 @@ function renderFoodStats(foodStats) {
     return;
   }
   
-  // Sắp xếp theo doanh thu giảm dần
   foodStats.sort((a, b) => b.revenue - a.revenue);
   
   gridContainer.innerHTML = foodStats.map(food => `
@@ -179,7 +182,6 @@ function renderFoodStats(foodStats) {
   `).join('');
 }
 
-// Hàm chính để load thống kê
 async function loadStatistics(period) {
   try {
     const orders = await getOrderDataFromFirebase();
@@ -187,8 +189,6 @@ async function loadStatistics(period) {
     
     renderSummary(stats.summary);
     renderFoodStats(stats.foods);
-    
-    // Cập nhật trạng thái nút active
     updateActiveButton(period);
     
   } catch (error) {
@@ -203,28 +203,22 @@ async function loadStatistics(period) {
   }
 }
 
-// Hàm cập nhật nút active
 function updateActiveButton(period) {
-  // Xóa class active khỏi tất cả nút
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
   });
   
-  // Thêm class active vào nút được chọn
   const activeBtn = document.getElementById(`btn-${period}`);
   if (activeBtn) {
     activeBtn.classList.add('active');
   }
 }
 
-// Gán sự kiện click cho các nút
 document.addEventListener('DOMContentLoaded', function() {
-  // Gán event listener cho mỗi nút filter
   document.getElementById('btn-today').addEventListener('click', () => loadStatistics('today'));
   document.getElementById('btn-week').addEventListener('click', () => loadStatistics('week'));
   document.getElementById('btn-month').addEventListener('click', () => loadStatistics('month'));
   document.getElementById('btn-all').addEventListener('click', () => loadStatistics('all'));
   
-  // Tải thống kê mặc định khi load trang
   loadStatistics('today');
 });
