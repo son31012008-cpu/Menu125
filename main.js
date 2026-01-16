@@ -28,33 +28,35 @@ if (!tableNumber) {
     customerInfo.innerHTML = `Bàn: <strong style="color:#FFD700;">${tableNumber}</strong> | ID: ${customerId}`;
   }
   
-  loadAllFoods(); // SỬA: Tải tất cả món thay vì 1 món
+  loadAllFoods();
 }
 
 // ========== TẢI TẤT CẢ MÓN ĂN TỪ FIREBASE ==========
 function loadAllFoods() {
-  const foodsRef = collection(db, 'foodData'); // SỬA: Lấy collection thay vì doc
-  
-  // Query để lấy món có sẵn (nếu có field 'available')
+  const menuContainer = document.getElementById('menuContainer');
+  if (!menuContainer) {
+    console.error("❌ Không tìm thấy #menuContainer!");
+    showToast('Lỗi hiển thị menu!');
+    return;
+  }
+
+  const foodsRef = collection(db, 'foodData');
   const q = query(foodsRef, where('available', '==', true));
   
   onSnapshot(q, (snapshot) => {
     const foods = [];
     const categories = new Set();
     
-    // Lấy tất cả món và danh mục
     snapshot.docs.forEach(doc => {
       const food = { id: doc.id, ...doc.data() };
       foods.push(food);
       if (food.category) categories.add(food.category);
     });
     
-    // Nếu không có category, dùng category mặc định
     if (categories.size === 0) {
       categories.add('Món chính');
     }
     
-    // Render theo từng category
     renderFoodsByCategory(foods, Array.from(categories));
   }, (error) => {
     console.error("❌ Lỗi load món ăn:", error);
@@ -64,57 +66,57 @@ function loadAllFoods() {
 
 // ========== RENDER THEO CATEGORY ==========
 function renderFoodsByCategory(foods, categories) {
-  const menuContainer = document.querySelector('.menu-container');
-  menuContainer.innerHTML = ''; // Xóa nội dung cũ
+  const menuContainer = document.getElementById('menuContainer');
+  if (!menuContainer) {
+    showToast('Lỗi hiển thị menu!');
+    return;
+  }
   
-  // Render từng category
+  menuContainer.innerHTML = '';
+  
   categories.forEach(category => {
-    // Tạo section cho category
     const section = document.createElement('section');
     section.className = 'category';
     
-    // Tạo title
     const title = document.createElement('h2');
     title.className = 'category-title';
     title.textContent = category;
     section.appendChild(title);
     
-    // Filter món ăn theo category
     const categoryFoods = foods.filter(food => 
       (food.category || 'Món chính') === category
     );
     
-    // Tạo food grid
     const foodGrid = document.createElement('div');
     foodGrid.className = 'food-grid';
     
-    // Render tất cả món trong category
-    foodGrid.innerHTML = categoryFoods.map(food => `
-      <div class="food-card" data-id="${food.id}" id="food-${food.id}">
-        <div class="food-info">
-          <h3 class="food-name">${food.icon || '🍽️'} ${food.name}</h3>
-          <p class="food-description">${food.description || 'Món ăn hấp dẫn'}</p>
-          <div class="food-price">${food.price.toLocaleString()}đ</div>
-          <div id="rating-${food.id}" class="rating-display"></div>
+    // ✅ THÊM NULL CHECK Ở ĐÂY
+    if (categoryFoods.length === 0) {
+      foodGrid.innerHTML = '<p style="text-align:center; color:#666;">Chưa có món nào trong danh mục này.</p>';
+    } else {
+      foodGrid.innerHTML = categoryFoods.map(food => `
+        <div class="food-card" data-id="${food.id}" id="food-${food.id}">
+          <div class="food-info">
+            <h3 class="food-name">${food.icon || '🍽️'} ${food.name}</h3>
+            <p class="food-description">${food.description || 'Món ăn hấp dẫn'}</p>
+            <div class="food-price">${food.price.toLocaleString()}đ</div>
+            <div id="rating-${food.id}" class="rating-display"></div>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
     
     section.appendChild(foodGrid);
     menuContainer.appendChild(section);
     
-    // Gắn sự kiện click cho mỗi món
+    // ✅ GẮN SỰ KIỆN AN TOÀN HƠN
     categoryFoods.forEach(food => {
-      setTimeout(() => {
-        const foodCard = document.getElementById(`food-${food.id}`);
-        if (foodCard) {
-          foodCard.addEventListener('click', () => {
-            location.href = `detail.html?id=${food.id}`;
-          });
-        }
-      }, 100);
-      
-      // Load rating cho mỗi món
+      const foodCard = document.getElementById(`food-${food.id}`);
+      if (foodCard) {
+        foodCard.addEventListener('click', () => {
+          location.href = `detail.html?id=${food.id}`;
+        });
+      }
       loadFoodRating(food.id);
     });
   });
@@ -181,7 +183,6 @@ function createFlowers() {
 
 // ========== SETUP SỰ KIỆN ==========
 function setupEventListeners() {
-  // Nút giỏ hàng floating
   const cartFloat = document.getElementById('cartFloat');
   if (cartFloat) {
     cartFloat.addEventListener('click', () => {
