@@ -1,213 +1,230 @@
-import { db, showToast } from './firebase-config.js';
-import { 
-  collection, query, where, onSnapshot, 
-  doc, getDocs 
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+// Import Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, query, get, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// Tham số toàn cục
-let currentFilter = 'today';
-let foodDataCache = {};
-let ordersListener = null;
+// Cấu hình Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCeD7qFkQKgg4rCTvJTY02l2JNUqy5P9Ag",
+  authDomain: "beptiendungnam.firebaseapp.com",
+  databaseURL: "https://beptiendungnam-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "beptiendungnam",
+  storageBucket: "beptiendungnam.appspot.com",
+  messagingSenderId: "1028539429806",
+  appId: "1:1028539429806:web:3e16a9b040df7d3a6c4dc7",
+  measurementId: "G-GX0QKJKYZX"
+};
 
-// ========== LOAD THỐNG KÊ ==========
-function loadStatistics(period = 'today') {
-  currentFilter = period;
+// Khởi tạo Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// CÁC HÀM THỐNG KÊ
+let currentPeriod = 'today';
+
+// Hàm format số tiền
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+// Hàm lấy thời gian bắt đầu theo chu kỳ
+function getStartTime(period) {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
-  // Set active button
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.period === period) {
-      btn.classList.add('active');
-    }
-  });
-
-  // Cleanup listener cũ
-  if (ordersListener) {
-    ordersListener();
-    ordersListener = null;
-  }
-
-  showLoading();
-
-  const ordersRef = collection(db, 'orders');
-  let startTime = new Date();
-
   switch(period) {
     case 'today':
-      startTime.setHours(0, 0, 0, 0);
-      break;
+      return startOfDay.getTime();
     case 'week':
-      startTime.setDate(startTime.getDate() - 7);
-      break;
+      return startOfDay.getTime() - (7 * 24 * 60 * 60 * 1000);
     case 'month':
-      startTime.setDate(startTime.getDate() - 30);
-      break;
+      return startOfDay.getTime() - (30 * 24 * 60 * 60 * 1000);
     case 'all':
-      startTime = new Date('2020-01-01');
-      break;
+      return 0;
+    default:
+      return startOfDay.getTime();
   }
-
-  const q = query(
-    ordersRef,
-    where('timestamp', '>=', startTime.toISOString()),
-    where('status', '==', 'completed')
-  );
-
-  ordersListener = onSnapshot(q, (snapshot) => {
-    console.log(`📊 REALTIME: ${snapshot.docs.length} đơn mới`);
-    processStatistics(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  }, (error) => {
-    console.error("❌ Lỗi Firebase:", error);
-    showToast('Không thể tải thống kê!');
-    hideLoading();
-  });
 }
 
-// ========== XỬ LÝ THỐNG KÊ ==========
-async function processStatistics(orders) {
+// Hàm lấy dữ liệu từ Firebase thay vì localStorage
+async function getOrderDataFromFirebase() {
+  try {
+    const ordersRef = ref(db, 'orders');
+    const snapshot = await get(ordersRef);
+    
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const orders = [];
+      for (let date in data) {
+        for (let key in data[date]) {
+          orders.push({
+            id: key,
+            ...data[date][key],
+            timestamp: data[date][key].timestamp || 0
+          });
+        }
+      }
+      return orders;
+    }
+    return [];
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu:", error);
+    return [];
+  }
+}
+
+// Hàm tính toán thống kê theo món
+function calculateFoodStats(orders, period) {
+  const startTime = getStartTime(period);
+  const filteredOrders = orders.filter(order => order.timestamp >= startTime);
+  
   const foodStats = {};
   let totalRevenue = 0;
-  let totalItems = 0;
-
-  // Load cache món ăn
-  if (Object.keys(foodDataCache).length === 0) {
-    console.log("📦 Đang cache dữ liệu món ăn...");
-    const foodsRef = collection(db, 'foodData');
-    const snapshot = await getDocs(foodsRef);
-    snapshot.docs.forEach(doc => {
-      foodDataCache[doc.id] = { id: doc.id, ...doc.data() };
-    });
-  }
-
-  orders.forEach(order => {
-    order.items.forEach(item => {
-      const key = item.name;
-      if (!foodStats[key]) {
-        foodStats[key] = {
-          count: 0,
-          revenue: 0,
-          icon: item.icon || '🍽️',
-          category: item.category || 'Chưa phân loại'
-        };
-      }
-      foodStats[key].count += item.quantity;
-      foodStats[key].revenue += item.price * item.quantity;
-      totalItems += item.quantity;
-    });
-    totalRevenue += order.totalAmount || 0;
+  let totalOrders = 0;
+  let totalQuantity = 0;
+  
+  filteredOrders.forEach(order => {
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        const foodName = item.name;
+        const quantity = parseInt(item.quantity) || 0;
+        const price = parseInt(item.price) || 0;
+        
+        if (!foodStats[foodName]) {
+          foodStats[foodName] = {
+            name: foodName,
+            icon: item.icon || '🍽️',
+            category: item.category || 'Món ăn',
+            quantity: 0,
+            revenue: 0
+          };
+        }
+        
+        foodStats[foodName].quantity += quantity;
+        foodStats[foodName].revenue += quantity * price;
+        
+        totalQuantity += quantity;
+        totalRevenue += quantity * price;
+      });
+      totalOrders++;
+    }
   });
-
-  const sortedStats = Object.entries(foodStats)
-    .sort(([,a], [,b]) => b.count - a.count);
-
-  renderSummary(totalRevenue, totalItems, orders.length);
-  renderFoodStats(sortedStats);
-  hideLoading();
+  
+  return {
+    foods: Object.values(foodStats),
+    summary: {
+      totalRevenue,
+      totalOrders,
+      totalQuantity,
+      averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0
+    }
+  };
 }
 
-// ========== RENDER TỔNG QUAN ==========
-function renderSummary(totalRevenue, totalItems, totalOrders) {
-  const container = document.getElementById('statistics-summary');
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div class="summary-card realtime-card">
-      <h3>💰 Tổng doanh thu</h3>
-      <div class="value">${totalRevenue.toLocaleString()}đ</div>
+// Hàm render tổng quan
+function renderSummary(summary) {
+  const summaryContainer = document.getElementById('statistics-summary');
+  summaryContainer.innerHTML = `
+    <div class="summary-card">
+      <h3>Tổng doanh thu</h3>
+      <div class="value">${formatCurrency(summary.totalRevenue)}</div>
     </div>
-    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #27ae60, #229954);">
-      <h3>🍽️ Tổng món đã bán</h3>
-      <div class="value">${totalItems}</div>
+    <div class="summary-card">
+      <h3>Tổng đơn hàng</h3>
+      <div class="value">${summary.totalOrders}</div>
     </div>
-    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
-      <h3>📋 Tổng đơn hàng</h3>
-      <div class="value">${totalOrders}</div>
+    <div class="summary-card">
+      <h3>Tổng số lượng</h3>
+      <div class="value">${summary.totalQuantity}</div>
     </div>
-    <div class="summary-card realtime-card" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
-      <h3>📊 Trung bình/đơn</h3>
-      <div class="value">${totalOrders > 0 ? Math.round(totalRevenue / totalOrders).toLocaleString() : 0}đ</div>
+    <div class="summary-card">
+      <h3>Giá trị trung bình/đơn</h3>
+      <div class="value">${formatCurrency(summary.averageOrderValue)}</div>
     </div>
   `;
 }
 
-// ========== RENDER DANH SÁCH MÓN ==========
-function renderFoodStats(stats) {
-  const container = document.getElementById('food-stats-grid');
-  if (!container) return;
+// Hàm render danh sách món ăn
+function renderFoodStats(foodStats) {
+  const gridContainer = document.getElementById('food-stats-grid');
   
-  if (stats.length === 0) {
-    container.innerHTML = `
+  if (foodStats.length === 0) {
+    gridContainer.innerHTML = `
       <div class="no-data">
-        <h3>📊 Chưa có dữ liệu</h3>
+        <h3>📊 Không có dữ liệu</h3>
         <p>Không có đơn hàng nào trong khoảng thời gian này</p>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = stats.map(([name, data]) => `
-    <div class="stat-card realtime-card">
+  // Sắp xếp theo doanh thu giảm dần
+  foodStats.sort((a, b) => b.revenue - a.revenue);
+  
+  gridContainer.innerHTML = foodStats.map(food => `
+    <div class="stat-card">
       <div class="stat-header">
-        <div class="stat-icon">${data.icon}</div>
+        <div class="stat-icon">${food.icon}</div>
         <div class="stat-info">
-          <h3>${name}</h3>
-          <div class="category">${data.category}</div>
+          <h3>${food.name}</h3>
+          <div class="category">${food.category}</div>
         </div>
       </div>
       <div class="stat-details">
         <div>
-          <div class="quantity-sold">${data.count}</div>
-          <div class="order-label">phần đã bán</div>
+          <div class="quantity-sold">${food.quantity} đã bán</div>
+          <div class="revenue">${formatCurrency(food.revenue)}</div>
         </div>
-        <div class="revenue">${data.revenue.toLocaleString()}đ</div>
       </div>
     </div>
   `).join('');
 }
 
-// ========== SHOW/HIDE LOADING ==========
-function showLoading() {
-  const container = document.getElementById('food-stats-grid');
-  if (container) {
-    container.innerHTML = `
+// Hàm chính để load thống kê (KHÔNG khai báo lại showToast)
+async function loadStatistics(period) {
+  try {
+    const orders = await getOrderDataFromFirebase();
+    const stats = calculateFoodStats(orders, period);
+    
+    renderSummary(stats.summary);
+    renderFoodStats(stats.foods);
+    
+    // Cập nhật trạng thái nút active
+    updateActiveButton(period);
+    
+  } catch (error) {
+    console.error("Lỗi khi tải thống kê:", error);
+    const gridContainer = document.getElementById('food-stats-grid');
+    gridContainer.innerHTML = `
       <div class="no-data">
-        <h3>⏳ Đang tải dữ liệu...</h3>
-        <p>Vui lòng đợi trong giây lát</p>
+        <h3>❌ Lỗi tải dữ liệu</h3>
+        <p>Không thể kết nối đến cơ sở dữ liệu</p>
       </div>
     `;
   }
 }
 
-function hideLoading() {
-  // Không cần làm gì, renderFoodStats sẽ thay thế nội dung
-}
-
-// ========== KHỞI TẠO ==========
-document.addEventListener('DOMContentLoaded', () => {
-  // Gắn sự kiện cho filter buttons
+// Hàm cập nhật nút active
+function updateActiveButton(period) {
+  // Xóa class active khỏi tất cả nút
   document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const period = btn.dataset.period;
-      loadStatistics(period);
-    });
+    btn.classList.remove('active');
   });
   
-  // Load mặc định
+  // Thêm class active vào nút được chọn
+  const activeBtn = document.getElementById(`btn-${period}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  }
+}
+
+// Gán sự kiện click cho các nút (thay vì dùng onclick trong HTML)
+document.addEventListener('DOMContentLoaded', function() {
+  // Gán event listener cho mỗi nút filter
+  document.getElementById('btn-today').addEventListener('click', () => loadStatistics('today'));
+  document.getElementById('btn-week').addEventListener('click', () => loadStatistics('week'));
+  document.getElementById('btn-month').addEventListener('click', () => loadStatistics('month'));
+  document.getElementById('btn-all').addEventListener('click', () => loadStatistics('all'));
+  
+  // Tải thống kê mặc định khi load trang
   loadStatistics('today');
 });
-
-// ⭐⭐⭐ FIX QUAN TRỌNG: EXPORT RA GLOBAL SCOPE⭐⭐⭐
-window.loadStatistics = loadStatistics;
-
-// Thêm CSS pulse animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes pulse {
-    0% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
-  .realtime-card {
-    transition: all 0.3s ease;
-  }
-`;
-document.head.appendChild(style);
