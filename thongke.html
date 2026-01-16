@@ -6,7 +6,7 @@
   <title>Thống kê món ăn - Bếp</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* CSS CHO TRANG THỐNG KÊ */
+    /* CSS CHO TRANG THỐNG KÊ - ĐÃ TỐI ƯU */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #2c3e50, #34495e);
@@ -156,6 +156,33 @@
       border-radius: 10px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
+    
+    /* THÊM LOADING SPINNER */
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* THÔNG BÁO LỖI */
+    .error-message {
+      background: #e74c3c;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -164,6 +191,9 @@
       <h1>📊 THỐNG KÊ MÓN ĂN</h1>
       <p>Xem số lượng và doanh thu theo món</p>
       
+      <!-- THÊM DIV THÔNG BÁO LỖI -->
+      <div id="error-message" class="error-message"></div>
+      
       <div class="statistics-summary" id="statistics-summary">
         <!-- Tổng quan sẽ load ở đây -->
       </div>
@@ -171,18 +201,19 @@
 
     <div class="filters-container">
       <div class="filter-buttons">
-        <!-- BỎ onclick, thêm data-period và ID để dễ gán event -->
-        <button class="filter-btn active" data-period="today" id="btn-today">Hôm nay</button>
-        <button class="filter-btn" data-period="week" id="btn-week">7 ngày qua</button>
-        <button class="filter-btn" data-period="month" id="btn-month">30 ngày qua</button>
-        <button class="filter-btn" data-period="all" id="btn-all">Tất cả</button>
+        <!-- ĐÃ XÓA data-period KHÔNG DÙNG -->
+        <button class="filter-btn active" id="btn-today">Hôm nay</button>
+        <button class="filter-btn" id="btn-week">7 ngày qua</button>
+        <button class="filter-btn" id="btn-month">30 ngày qua</button>
+        <button class="filter-btn" id="btn-all">Tất cả</button>
       </div>
     </div>
 
     <div class="food-stats-grid" id="food-stats-grid">
-      <div class="no-data">
-        <h3>📊 Đang tải thống kê...</h3>
-        <p>Vui lòng chọn mốc thời gian</p>
+      <!-- THÊM LOADING SPINNER -->
+      <div class="no-data" id="loading">
+        <div class="spinner"></div>
+        <h3>Đang tải thống kê...</h3>
       </div>
     </div>
   </div>
