@@ -1,14 +1,18 @@
-import { db } from './firebase-config.js';
-import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { db, showToast } from './firebase-config.js';
+import { 
+  collection, query, where, onSnapshot, 
+  doc, getDoc, serverTimestamp, increment 
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// Tham số toàn cục để theo dõi filter hiện tại
+// Tham số toàn cục
 let currentFilter = 'today';
+let foodDataCache = {}; // Cache dữ liệu món ăn
 
-// Load thống kê với filter
+// ========== LOAD THỐNG KÊ ==========
 window.loadStatistics = function(period = 'today') {
-  currentFilter = period; // Lưu filter hiện tại
+  currentFilter = period;
   
-  // Set active button - SỬA LỖI Ở ĐÂY
+  // Set active button
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.dataset.period === period) {
@@ -19,7 +23,6 @@ window.loadStatistics = function(period = 'today') {
   const ordersRef = collection(db, 'orders');
   let startTime = new Date();
 
-  // Tính thời gian bắt đầu
   switch(period) {
     case 'today':
       startTime.setHours(0, 0, 0, 0);
@@ -31,28 +34,40 @@ window.loadStatistics = function(period = 'today') {
       startTime.setDate(startTime.getDate() - 30);
       break;
     case 'all':
-      startTime = new Date('2020-01-01'); // Ngày xa trong quá khứ
+      startTime = new Date('2020-01-01');
       break;
   }
 
   const q = query(
     ordersRef,
     where('timestamp', '>=', startTime.toISOString()),
-    where('status', '==', 'completed') // Chỉ tính đơn hoàn thành
+    where('status', '==', 'completed')
   );
 
   onSnapshot(q, (snapshot) => {
-    processStatistics(snapshot.docs.map(doc => doc.data()));
+    console.log(`✅ Tìm thấy ${snapshot.docs.length} đơn hoàn thành`);
+    processStatistics(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, (error) => {
     console.error("❌ Lỗi load thống kê:", error);
-    showToast('Không thể tải thống kê!', 'error');
+    showToast('Không thể tải thống kê!');
   });
 }
 
-function processStatistics(orders) {
-  const foodStats = {}; // { name: { count, revenue, icon, category } }
+// ========== XỬ LÝ THỐNG KÊ ==========
+async function processStatistics(orders) {
+  const foodStats = {};
   let totalRevenue = 0;
   let totalItems = 0;
+
+  // Load cache món ăn nếu chưa có
+  if (Object.keys(foodDataCache).length === 0) {
+    console.log("📦 Đang cache dữ liệu món ăn...");
+    const foodsRef = collection(db, 'foodData');
+    const snapshot = await getDocs(foodsRef);
+    snapshot.docs.forEach(doc => {
+      foodDataCache[doc.id] = { id: doc.id, ...doc.data() };
+    });
+  }
 
   orders.forEach(order => {
     order.items.forEach(item => {
@@ -69,10 +84,9 @@ function processStatistics(orders) {
       foodStats[key].revenue += item.price * item.quantity;
       totalItems += item.quantity;
     });
-    totalRevenue += order.totalAmount;
+    totalRevenue += order.totalAmount || 0;
   });
 
-  // Sắp xếp theo số lượng giảm dần
   const sortedStats = Object.entries(foodStats)
     .sort(([,a], [,b]) => b.count - a.count);
 
@@ -80,8 +94,12 @@ function processStatistics(orders) {
   renderFoodStats(sortedStats);
 }
 
+// ========== RENDER TỔNG QUAN ==========
 function renderSummary(totalRevenue, totalItems, totalOrders) {
-  document.getElementById('statistics-summary').innerHTML = `
+  const container = document.getElementById('statistics-summary');
+  if (!container) return;
+  
+  container.innerHTML = `
     <div class="summary-card">
       <h3>💰 Tổng doanh thu</h3>
       <div class="value">${totalRevenue.toLocaleString()}đ</div>
@@ -101,8 +119,10 @@ function renderSummary(totalRevenue, totalItems, totalOrders) {
   `;
 }
 
+// ========== RENDER DANH SÁCH MÓN ==========
 function renderFoodStats(stats) {
   const container = document.getElementById('food-stats-grid');
+  if (!container) return;
   
   if (stats.length === 0) {
     container.innerHTML = `
@@ -134,11 +154,12 @@ function renderFoodStats(stats) {
   `).join('');
 }
 
-// Khởi tạo mặc định khi mở trang
+// ========== KHỞI TẠO ==========
 window.addEventListener('load', () => {
   loadStatistics('today');
 });
 
+// ========== TOAST ==========
 function showToast(message, type = 'success') {
   const container = document.getElementById('toastContainer') || (() => {
     const c = document.createElement('div');
