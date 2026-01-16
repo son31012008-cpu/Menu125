@@ -1,15 +1,15 @@
 import { db, showToast } from './firebase-config.js';
 import { 
   collection, query, where, onSnapshot, 
-  doc, getDoc, serverTimestamp, increment 
+  doc, getDocs 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // Tham số toàn cục
 let currentFilter = 'today';
-let foodDataCache = {}; // Cache dữ liệu món ăn
+let foodDataCache = {};
 
 // ========== LOAD THỐNG KÊ ==========
-window.loadStatistics = function(period = 'today') {
+function loadStatistics(period = 'today') {
   currentFilter = period;
   
   // Set active button
@@ -59,7 +59,7 @@ async function processStatistics(orders) {
   let totalRevenue = 0;
   let totalItems = 0;
 
-  // Load cache món ăn nếu chưa có
+  // Load cache món ăn
   if (Object.keys(foodDataCache).length === 0) {
     console.log("📦 Đang cache dữ liệu món ăn...");
     const foodsRef = collection(db, 'foodData');
@@ -155,28 +155,18 @@ function renderFoodStats(stats) {
 }
 
 // ========== KHỞI TẠO ==========
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
+  // Gắn sự kiện cho filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const period = btn.dataset.period;
+      loadStatistics(period);
+    });
+  });
+  
+  // Load mặc định
   loadStatistics('today');
 });
 
-// ========== TOAST ==========
-function showToast(message, type = 'success') {
-  const container = document.getElementById('toastContainer') || (() => {
-    const c = document.createElement('div');
-    c.id = 'toastContainer';
-    c.className = 'toast-container';
-    document.body.appendChild(c);
-    return c;
-  })();
-  
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
+// Export ra global
+window.loadStatistics = loadStatistics;
