@@ -1,36 +1,14 @@
-// Import Firebase SDK - Sửa dấu cách thừa
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+// ========== IMPORT TỪ FIREBASE JS ==========
+import { 
+  db, customerId, 
+  collection, query, where, orderBy, getDocs,
+  showToast 
+} from './firebase-config.js';
 
-// Cấu hình Firebase MỚI - KHÔNG DẤU CÁCH
-const firebaseConfig = {
-  apiKey: "AIzaSyADHGSv4xwRrqP-ia5WZUWs6GHchtpEYSc",
-  authDomain: "menu-vhdg.firebaseapp.com",
-  databaseURL: "https://menu-vhdg-default-rtdb.asia-southeast1.firebasedatabase.app", // ✅ ĐÃ SỬA
-  projectId: "menu-vhdg",
-  storageBucket: "menu-vhdg.firebasestorage.app",
-  messagingSenderId: "486523234627",
-  appId: "1:486523234627:web:c25a8970015f77599627f6",
-  measurementId: "G-Z7T04FE180"
-};
-
-// Khởi tạo Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Debug: Kiểm tra URL đã đúng chưa
-console.log("✅ Firebase URL:", firebaseConfig.databaseURL);
-
-// Test kết nối database
-get(ref(db, '/')).then(snapshot => {
-  console.log("✅ Kết nối thành công! Database có dữ liệu:", snapshot.exists());
-}).catch(error => {
-  console.error("❌ Lỗi kết nối database:", error);
-});
-
-// ==================== CÁC HÀM THỐNG KÊ ====================
+// ========== CẤU HÌNH & BIẾN ==========
 let currentPeriod = 'today';
 
+// ========== CÁC HÀM TIỆN ÍCH ==========
 function formatCurrency(amount) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 }
@@ -38,14 +16,15 @@ function formatCurrency(amount) {
 function getStartTime(period) {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayMs = 24 * 60 * 60 * 1000;
   
   switch(period) {
     case 'today':
       return startOfDay.getTime();
     case 'week':
-      return startOfDay.getTime() - (7 * 24 * 60 * 60 * 1000);
+      return startOfDay.getTime() - (7 * dayMs);
     case 'month':
-      return startOfDay.getTime() - (30 * 24 * 60 * 60 * 1000);
+      return startOfDay.getTime() - (30 * dayMs);
     case 'all':
       return 0;
     default:
@@ -53,32 +32,32 @@ function getStartTime(period) {
   }
 }
 
-async function getOrderDataFromFirebase() {
+// ========== LẤY DỮ LIỆU TỪ FIRESTORE ==========
+async function getOrderDataFromFirestore() {
   try {
-    const ordersRef = ref(db, 'orders');
-    const snapshot = await get(ordersRef);
+    const ordersRef = collection(db, 'orders');
+    const q = query(ordersRef, orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
     
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      const orders = [];
-      for (let date in data) {
-        for (let key in data[date]) {
-          orders.push({
-            id: key,
-            ...data[date][key],
-            timestamp: data[date][key].timestamp || 0
-          });
-        }
-      }
-      return orders;
-    }
-    return [];
+    const orders = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      orders.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate?.() ? data.timestamp.toDate().getTime() : (data.timestamp || 0)
+      });
+    });
+    
+    return orders;
   } catch (error) {
-    console.error("Lỗi khi lấy dữ liệu:", error);
+    console.error("Lỗi Firestore:", error);
+    showToast('Lỗi kết nối database: ' + error.message, 'error');
     return [];
   }
 }
 
+// ========== TÍNH TOÁN THỐNG KÊ ==========
 function calculateFoodStats(orders, period) {
   const startTime = getStartTime(period);
   const filteredOrders = orders.filter(order => order.timestamp >= startTime);
@@ -126,9 +105,12 @@ function calculateFoodStats(orders, period) {
   };
 }
 
+// ========== RENDER GIAO DIỆN ==========
 function renderSummary(summary) {
-  const summaryContainer = document.getElementById('statistics-summary');
-  summaryContainer.innerHTML = `
+  const container = document.getElementById('statistics-summary');
+  if (!container) return;
+  
+  container.innerHTML = `
     <div class="summary-card">
       <h3>Tổng doanh thu</h3>
       <div class="value">${formatCurrency(summary.totalRevenue)}</div>
@@ -150,6 +132,10 @@ function renderSummary(summary) {
 
 function renderFoodStats(foodStats) {
   const gridContainer = document.getElementById('food-stats-grid');
+  if (!gridContainer) return;
+  
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'none';
   
   if (foodStats.length === 0) {
     gridContainer.innerHTML = `
@@ -182,27 +168,6 @@ function renderFoodStats(foodStats) {
   `).join('');
 }
 
-async function loadStatistics(period) {
-  try {
-    const orders = await getOrderDataFromFirebase();
-    const stats = calculateFoodStats(orders, period);
-    
-    renderSummary(stats.summary);
-    renderFoodStats(stats.foods);
-    updateActiveButton(period);
-    
-  } catch (error) {
-    console.error("Lỗi khi tải thống kê:", error);
-    const gridContainer = document.getElementById('food-stats-grid');
-    gridContainer.innerHTML = `
-      <div class="no-data">
-        <h3>❌ Lỗi tải dữ liệu</h3>
-        <p>Không thể kết nối đến cơ sở dữ liệu</p>
-      </div>
-    `;
-  }
-}
-
 function updateActiveButton(period) {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('active');
@@ -214,11 +179,28 @@ function updateActiveButton(period) {
   }
 }
 
+// ========== LOAD THỐNG KÊ ==========
+async function loadStatistics(period) {
+  try {
+    const orders = await getOrderDataFromFirestore();
+    const stats = calculateFoodStats(orders, period);
+    
+    renderSummary(stats.summary);
+    renderFoodStats(stats.foods);
+    updateActiveButton(period);
+    
+  } catch (error) {
+    console.error("Lỗi tải thống kê:", error);
+    showToast('Không thể tải thống kê: ' + error.message, 'error');
+  }
+}
+
+// ========== KHỞI TẠO TRANG ==========
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('btn-today').addEventListener('click', () => loadStatistics('today'));
-  document.getElementById('btn-week').addEventListener('click', () => loadStatistics('week'));
-  document.getElementById('btn-month').addEventListener('click', () => loadStatistics('month'));
-  document.getElementById('btn-all').addEventListener('click', () => loadStatistics('all'));
+  document.getElementById('btn-today')?.addEventListener('click', () => loadStatistics('today'));
+  document.getElementById('btn-week')?.addEventListener('click', () => loadStatistics('week'));
+  document.getElementById('btn-month')?.addEventListener('click', () => loadStatistics('month'));
+  document.getElementById('btn-all')?.addEventListener('click', () => loadStatistics('all'));
   
   loadStatistics('today');
 });
