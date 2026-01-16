@@ -179,7 +179,7 @@ function renderFoodStats(foodStats) {
   `).join('');
 }
 
-// Hàm chính để load thống kê (KHÔNG khai báo lại showToast)
+// Hàm chính để load thống kê
 async function loadStatistics(period) {
   try {
     const orders = await getOrderDataFromFirebase();
@@ -217,7 +217,7 @@ function updateActiveButton(period) {
   }
 }
 
-// Gán sự kiện click cho các nút (thay vì dùng onclick trong HTML)
+// Gán sự kiện click cho các nút
 document.addEventListener('DOMContentLoaded', function() {
   // Gán event listener cho mỗi nút filter
   document.getElementById('btn-today').addEventListener('click', () => loadStatistics('today'));
