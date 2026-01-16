@@ -171,11 +171,11 @@
 
     <div class="filters-container">
       <div class="filter-buttons">
-        <!-- SỬA: Thêm data-period cho mỗi nút -->
-        <button class="filter-btn active" data-period="today" onclick="loadStatistics('today')">Hôm nay</button>
-        <button class="filter-btn" data-period="week" onclick="loadStatistics('week')">7 ngày qua</button>
-        <button class="filter-btn" data-period="month" onclick="loadStatistics('month')">30 ngày qua</button>
-        <button class="filter-btn" data-period="all" onclick="loadStatistics('all')">Tất cả</button>
+        <!-- BỎ onclick, thêm data-period và ID để dễ gán event -->
+        <button class="filter-btn active" data-period="today" id="btn-today">Hôm nay</button>
+        <button class="filter-btn" data-period="week" id="btn-week">7 ngày qua</button>
+        <button class="filter-btn" data-period="month" id="btn-month">30 ngày qua</button>
+        <button class="filter-btn" data-period="all" id="btn-all">Tất cả</button>
       </div>
     </div>
 
