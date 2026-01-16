@@ -1,11 +1,20 @@
 import { db } from './firebase-config.js';
 import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+// Tham số toàn cục để theo dõi filter hiện tại
+let currentFilter = 'today';
+
 // Load thống kê với filter
 window.loadStatistics = function(period = 'today') {
-  // Set active button
-  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  currentFilter = period; // Lưu filter hiện tại
+  
+  // Set active button - SỬA LỖI Ở ĐÂY
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.period === period) {
+      btn.classList.add('active');
+    }
+  });
 
   const ordersRef = collection(db, 'orders');
   let startTime = new Date();
@@ -125,7 +134,7 @@ function renderFoodStats(stats) {
   `).join('');
 }
 
-// Load mặc định khi mở trang
+// Khởi tạo mặc định khi mở trang
 window.addEventListener('load', () => {
   loadStatistics('today');
 });
