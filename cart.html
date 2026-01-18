@@ -10,7 +10,6 @@
     :root {
       --primary-red: #8B0000;
       --accent-gold: #FFD700;
-      --accent-orange: #FF6347;
       --text-dark: #2c3e50;
       --text-light: #7f8c8d;
       --bg-gradient: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
@@ -19,7 +18,7 @@
     }
 
     body {
-      font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+      font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-gradient);
       min-height: 100vh;
       padding: 20px;
@@ -86,7 +85,7 @@
 
     /* EMPTY CART */
     .empty-cart {
-      display: none; /* JS sẽ toggle */
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -138,14 +137,13 @@
     }
 
     /* CART ITEMS */
-    .cart-items {
-      display: none; /* JS sẽ toggle */
+    .cart-items-section {
+      display: none;
       flex-direction: column;
       gap: 20px;
-      margin-bottom: 40px;
     }
 
-    .cart-items.show {
+    .cart-items-section.show {
       display: flex;
     }
 
@@ -214,7 +212,7 @@
     }
 
     .quantity-controls button:hover {
-      background: var(--accent-orange);
+      background: #a71e1e;
       transform: scale(1.1);
     }
 
@@ -255,13 +253,14 @@
       transform: rotate(90deg);
     }
 
-    /* ORDER SUMMARY */
+    /* ORDER SUMMARY - ĐÃ BỎ PHÍ & GIẢM GIÁ */
     .order-summary-card {
       background: linear-gradient(135deg, var(--primary-red), #a71e1e);
       color: white;
       padding: 30px;
       border-radius: 20px;
       box-shadow: var(--shadow);
+      margin-top: 20px;
     }
 
     .summary-title {
@@ -272,38 +271,27 @@
       gap: 10px;
     }
 
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      font-size: 1.1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .summary-row:last-of-type {
-      border-bottom: none;
-    }
-
-    .summary-row.discount {
-      color: var(--accent-gold);
-    }
-
+    /* CHỈ CÒN TỔNG CỘNG */
     .summary-total {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 1.8rem;
       font-weight: 800;
-      margin-top: 20px;
       padding-top: 20px;
       border-top: 3px solid var(--accent-gold);
     }
 
+    .summary-total span:last-child {
+      color: var(--accent-gold);
+    }
+
+    /* NÚT GỬI ĐƠN - FIX FONT */
     .place-order-btn {
       width: 100%;
       margin-top: 30px;
       padding: 20px;
-      font-size: 1.3rem;
+      font-size: 1.4rem; /* Tăng kích thước chữ */
       background: linear-gradient(135deg, var(--accent-gold), #e6b800);
       color: var(--primary-red);
       border: none;
@@ -315,17 +303,13 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      letter-spacing: 1px; /* Thêm khoảng cách chữ */
+      text-transform: uppercase; /* Viết hoa cho rõ ràng */
     }
 
     .place-order-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(255,215,0,0.5);
-    }
-
-    .place-order-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
     }
 
     /* MODAL */
@@ -462,6 +446,10 @@
       .cart-header h1 {
         font-size: 2rem;
       }
+
+      .place-order-btn {
+        font-size: 1.2rem; /* Giảm chút trên mobile */
+      }
     }
   </style>
 </head>
@@ -498,7 +486,7 @@
       </section>
 
       <!-- CART WITH ITEMS -->
-      <section class="cart-items show" id="cartItemsSection">
+      <section class="cart-items-section" id="cartItemsSection">
         <div class="cart-items-list" id="cartItemsList"></div>
         
         <aside class="order-summary-card">
@@ -507,26 +495,13 @@
             Tóm tắt đơn hàng
           </h2>
           
-          <div class="summary-rows">
-            <div class="summary-row">
-              <span>Tạm tính:</span>
-              <span id="subtotalAmount">0đ</span>
-            </div>
-            <div class="summary-row">
-              <span>Phí giao hàng:</span>
-              <span>Miễn phí</span>
-            </div>
-            <div class="summary-row discount">
-              <span>Giảm giá Tết 2025:</span>
-              <span id="discountAmount">-0đ</span>
-            </div>
-          </div>
-
+          <!-- ✅ CHỈ CÒN TỔNG CỘNG -->
           <div class="summary-total">
             <span>Tổng cộng:</span>
             <span id="totalAmount">0đ</span>
           </div>
 
+          <!-- ✅ NÚT ĐẶT HÀNG VỚI FONT ĐÃ FIX -->
           <button class="place-order-btn" id="placeOrderBtn" aria-label="Gửi đơn cho bếp">
             <span>✅</span>
             GỬI ĐƠN CHO BẾP
