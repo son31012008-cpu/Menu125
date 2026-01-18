@@ -1,4 +1,4 @@
-// Import Firebase SDK - KHÔNG DẤU CÁCH
+// Import Firebase SDK - ĐÃ XÓA DẤU CÁCH THỪA
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { 
@@ -35,7 +35,6 @@ signInAnonymously(auth).catch(console.error);
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("✅ Firebase Auth ID:", user.uid);
-    // TODO: Sau này dùng user.uid để sync đơn hàng giữa thiết bị
   }
 });
 
@@ -79,14 +78,14 @@ function createToastContainer() {
   return container;
 }
 
-// ========== HÀM SYNC ĐƠN HÀNG (Tính năng cao cấp) ==========
-export async function syncOrdersToUser(userId, customerId) {
+// ========== HÀM SYNC ĐƠN HÀNG ==========
+// ĐÃ XÓA "export" ở đây vì export ở cuối file rồi
+async function syncOrdersToUser(userId, customerId) {
   try {
     const ordersByCustomer = collection(db, 'orders');
     const q = query(ordersByCustomer, where('customerId', '==', customerId));
     const snapshot = await getDocs(q);
     
-    // Copy đơn hàng cũ sang user mới
     const promises = snapshot.docs.map(docSnap => {
       const data = docSnap.data();
       return setDoc(doc(db, 'userOrders', userId, 'orders', docSnap.id), data);
@@ -105,5 +104,6 @@ export {
   db, auth, signInAnonymously, customerId, 
   doc, onSnapshot, getDoc, setDoc, updateDoc, increment,
   collection, query, where, orderBy, limit, getDocs,
-  showToast, syncOrdersToUser
+  showToast, 
+  syncOrdersToUser  // Chỉ export 1 lần ở đây
 };
