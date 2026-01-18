@@ -13,13 +13,9 @@ let totalAmount = 0;
 // KHỞI TẠO TRANG
 // ============================================
 async function initCart() {
-  // Lấy giỏ hàng từ localStorage
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
-  // Hiển thị thông tin khách và bàn
   displayCustomerInfo();
-  
-  // Kiểm tra trạng thái giỏ hàng
   toggleCartView();
   
   if (cart.length > 0) {
@@ -40,7 +36,6 @@ function displayCustomerInfo() {
     customerEl.textContent = customerId || 'Khách vãng lai';
   }
   
-  // Lấy số bàn từ localStorage (có thể được set ở index.html hoặc admin)
   const tableNumber = localStorage.getItem('tableNumber') || 'Chưa chọn bàn';
   if (tableEl) {
     tableEl.textContent = `Bàn: ${tableNumber}`;
@@ -98,7 +93,6 @@ function renderCart() {
     </div>
   `).join('');
   
-  // Gắn sự kiện cho các nút
   attachCartItemEvents();
 }
 
@@ -106,7 +100,6 @@ function renderCart() {
 // GẮN SỰ KIỆN CHO CÁC NÚT TRONG GIỎ
 // ============================================
 function attachCartItemEvents() {
-  // Nút tăng/giảm số lượng
   document.querySelectorAll('.qty-btn.minus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
@@ -121,7 +114,6 @@ function attachCartItemEvents() {
     });
   });
   
-  // Nút xóa
   document.querySelectorAll('.remove-item-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
@@ -144,8 +136,6 @@ function changeQuantity(index, change) {
   saveCart();
   renderCart();
   calculateTotal();
-  
-  showToast(`Đã cập nhật: ${cart[index].name}`, 'info');
 }
 
 // ============================================
@@ -176,26 +166,18 @@ function saveCart() {
 }
 
 // ============================================
-// TÍNH TỔNG TIỀN
+// ✅ TÍNH TỔNG TIỀN ĐÃ BỎ GIẢM GIÁ
 // ============================================
 function calculateTotal() {
   totalAmount = cart.reduce((sum, item) => {
-    const itemTotal = (item.price || 0) * (item.quantity || 0);
-    return sum + itemTotal;
+    return sum + ((item.price || 0) * (item.quantity || 0));
   }, 0);
   
-  // Cập nhật UI
+  // Chỉ hiển thị tổng cộng
   const totalEl = document.getElementById('totalAmount');
-  const subtotalEl = document.getElementById('subtotalAmount');
-  const discountEl = document.getElementById('discountAmount');
-  
-  // Tính giảm giá (ví dụ: 5% nếu đơn > 200k)
-  const discount = totalAmount > 200000 ? totalAmount * 0.05 : 0;
-  const finalTotal = totalAmount - discount;
-  
-  if (subtotalEl) subtotalEl.textContent = `${totalAmount.toLocaleString('vi-VN')}đ`;
-  if (discountEl) discountEl.textContent = `-${discount.toLocaleString('vi-VN')}đ`;
-  if (totalEl) totalEl.textContent = `${finalTotal.toLocaleString('vi-VN')}đ`;
+  if (totalEl) {
+    totalEl.textContent = `${totalAmount.toLocaleString('vi-VN')}đ`;
+  }
 }
 
 // ============================================
@@ -210,8 +192,7 @@ async function sendOrderToFirebase(orderData) {
       ...orderData,
       status: 'pending',
       createdAt: new Date().toISOString(),
-      orderNumber: Date.now().toString().slice(-6),
-      customerId: customerId
+      orderNumber: Date.now().toString().slice(-6)
     });
     
     // Cập nhật thống kê
@@ -245,21 +226,6 @@ async function sendOrderToFirebase(orderData) {
 function showConfirmModal() {
   const tableNumber = localStorage.getItem('tableNumber') || 'Chưa chọn bàn';
   
-  // Tính tổng cuối cùng (có giảm giá)
-  const discount = totalAmount > 200000 ? totalAmount * 0.05 : 0;
-  const finalTotal = totalAmount - discount;
-  
-  const orderData = {
-    tableNumber,
-    items: [...cart],
-    subtotal: totalAmount,
-    discount,
-    totalAmount: finalTotal,
-    customerId: customerId,
-    timestamp: Date.now()
-  };
-  
-  // Render chi tiết đơn hàng trong modal
   const orderReviewEl = document.getElementById('orderReviewContent');
   if (orderReviewEl) {
     orderReviewEl.innerHTML = `
@@ -267,7 +233,7 @@ function showConfirmModal() {
         <strong>📍 Bàn:</strong> ${tableNumber}<br>
         <strong>👤 Khách:</strong> ${customerId}<br>
         <strong>📝 Số món:</strong> ${cart.length}<br>
-        <strong>💰 Tổng cộng:</strong> ${finalTotal.toLocaleString('vi-VN')}đ
+        <strong>💰 Tổng cộng:</strong> ${totalAmount.toLocaleString('vi-VN')}đ
       </div>
       <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
       <div class="order-items-list">
@@ -281,7 +247,6 @@ function showConfirmModal() {
     `;
   }
   
-  // Hiển thị modal
   const modal = document.getElementById('confirmModal');
   modal?.classList.add('show');
   modal?.setAttribute('aria-hidden', 'false');
@@ -308,9 +273,6 @@ async function handlePlaceOrder() {
   const tableNumber = localStorage.getItem('tableNumber');
   if (!tableNumber || tableNumber === 'Chưa chọn bàn') {
     showToast('⚠️ Vui lòng chọn số bàn trước!', 'warning');
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 1500);
     return;
   }
   
@@ -324,10 +286,6 @@ async function handleConfirmOrder() {
   try {
     const tableNumber = localStorage.getItem('tableNumber') || 'Chưa chọn bàn';
     
-    // Tính tổng cuối cùng
-    const discount = totalAmount > 200000 ? totalAmount * 0.05 : 0;
-    const finalTotal = totalAmount - discount;
-    
     const orderData = {
       tableNumber,
       items: cart.map(item => ({
@@ -338,9 +296,7 @@ async function handleConfirmOrder() {
         category: item.category || 'mon_chinh',
         imageURL: item.imageURL || ''
       })),
-      subtotal: totalAmount,
-      discount: discount,
-      totalAmount: finalTotal,
+      totalAmount: totalAmount, // ✅ CHỈ CÓ TỔNG TIỀN MÓN
       customerId: customerId,
       createdAt: new Date().toISOString(),
       status: 'pending'
@@ -358,7 +314,7 @@ async function handleConfirmOrder() {
     // Đóng modal
     closeConfirmModal();
     
-    // Chuyển về trang chính sau 2 giây
+    // Chuyển về trang chính
     setTimeout(() => {
       window.location.href = 'index.html';
     }, 2000);
