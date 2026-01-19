@@ -79,7 +79,6 @@ function createToastContainer() {
 }
 
 // ========== HÀM SYNC ĐƠN HÀNG ==========
-// ĐÃ XÓA "export" ở đây vì export ở cuối file rồi
 async function syncOrdersToUser(userId, customerId) {
   try {
     const ordersByCustomer = collection(db, 'orders');
@@ -105,5 +104,5 @@ export {
   doc, onSnapshot, getDoc, setDoc, updateDoc, increment,
   collection, query, where, orderBy, limit, getDocs,
   showToast, 
-  syncOrdersToUser  // Chỉ export 1 lần ở đây
+  syncOrdersToUser
 };
