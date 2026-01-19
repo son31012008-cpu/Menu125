@@ -33,7 +33,7 @@ function displayCustomerInfo() {
   const tableEl = document.getElementById('tableNumber');
   
   if (customerEl) {
-    customerEl.textContent = customerId || 'Khách vãng lai';
+    customerEl.textContent = customerId || 'Khách';
   }
   
   const tableNumber = localStorage.getItem('tableNumber') || 'Chưa chọn bàn';
@@ -67,10 +67,10 @@ function renderCart() {
   
   cartItemsList.innerHTML = cart.map((item, index) => `
     <div class="cart-item-card" data-id="${item.id || item.name}">
-      <img src="${item.imageURL || 'placeholder.jpg'}" 
+      <img src="${item.imageURL || 'banhtranglui.png'}" 
            alt="${item.name}" 
            class="item-image"
-           onerror="this.src='placeholder.jpg'">
+           onerror="this.src='banhtranglui.png'">
       
       <div class="item-details">
         <h3>${item.name}</h3>
@@ -358,3 +358,4 @@ function setupEventListeners() {
 // KHỞI CHẠY KHI TRANG ĐƯỢC TẢI
 // ============================================
 document.addEventListener('DOMContentLoaded', initCart);
+
