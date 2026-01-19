@@ -181,18 +181,22 @@ function calculateTotal() {
 }
 
 // ============================================
-// GỬI ĐƠN LÊN FIREBASE
+// GỬI ĐƠN LÊN FIREBASE - ĐÃ SỬA
 // ============================================
 async function sendOrderToFirebase(orderData) {
   try {
-    const orderId = `${orderData.tableNumber}_${Date.now()}`;
+    // ✅ SỬA: Tạo orderId an toàn, chỉ lấy số từ tableNumber
+    const cleanTableNumber = orderData.tableNumber.replace(/\D/g, '') || '0';
+    const orderId = `order_${cleanTableNumber}_${Date.now()}`;
+    
     const orderRef = doc(db, 'orders', orderId);
     
     await setDoc(orderRef, {
       ...orderData,
       status: 'pending',
       createdAt: new Date().toISOString(),
-      orderNumber: Date.now().toString().slice(-6)
+      orderNumber: Date.now().toString().slice(-6),
+      timestamp: Date.now() // ✅ Thêm timestamp để sắp xếp
     });
     
     // Cập nhật thống kê
