@@ -2,342 +2,79 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Menu Tân Niên Ý - Tết 2025</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* ========== CSS CHUYÊN NGHIỆP + HIỆU ỨNG TẾT ========== */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow-x: hidden;
-    }
-    
-    /* NỀN TẾT KẾT HỢP HOẠ TIẾT */
-    .tet-background {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FF6347 100%);
-      z-index: -3;
-    }
-    
-    /* HOẠ TIẾT MINI HOẠ TRÊN NỀN */
-    .tet-background::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-image: 
-        url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M20,20 Q40,5 60,20 T100,20 Q85,40 100,60 T100,100 Q60,85 20,100 T0,100 Q5,60 0,20 T20,20' fill='rgba(255,215,0,0.05)'/></svg>"),
-        url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='10' cy='10' r='1.5' fill='rgba(255,215,0,0.1)'/><circle cx='30' cy='70' r='1' fill='rgba(255,215,0,0.1)'/><circle cx='85' cy='40' r='1.2' fill='rgba(255,215,0,0.1)'/></svg>");
-      background-size: 150px 150px, 100px 100px;
-      animation: patternMove 20s linear infinite;
-    }
-    
-    @keyframes patternMove {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 150px 150px, 100px 100px; }
-    }
-    
-    /* HOA RƠI ĐỘNG */
-    .flower-container {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: -1;
-    }
-    
-    .flower {
-      position: absolute;
-      font-size: 24px;
-      animation: fall linear infinite;
-      opacity: 0.8;
-    }
-    
-    @keyframes fall {
-      0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 0;
-      }
-      10% {
-        opacity: 0.8;
-      }
-      90% {
-        opacity: 0.8;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(360deg);
-        opacity: 0;
-      }
-    }
-    
-    /* PHẦN CHỌN BÀN */
-    .auth-container {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-    }
-    
-    .auth-box {
-      background: white;
-      padding: 50px 40px;
-      border-radius: 25px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      min-width: 400px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .auth-box::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 5px;
-      background: linear-gradient(90deg, #FFD700, #FF6347);
-    }
-    
-    .auth-box h1 {
-      font-size: 36px;
-      color: #8B0000;
-      margin-bottom: 15px;
-    }
-    
-    #startBtn {
-      padding: 15px 40px;
-      font-size: 20px;
-      background: linear-gradient(45deg, #FFD700, #FF6347);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-    }
-    
-    #startBtn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    
-    /* PHẦN MENU CHÍNH */
-    .main-content {
-      display: none;
-    }
-    
-    .header {
-      text-align: center;
-      padding: 40px 20px 30px;
-    }
-    
-    .restaurant-name {
-      font-size: 72px;
-      color: #FFD700;
-      text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
-      margin-bottom: 20px;
-    }
-    
-    .customer-info {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      z-index: 100;
-    }
-    
-    .menu-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .category-title {
-      font-size: 32px;
-      color: #FFD700;
-      text-align: center;
-      margin: 30px 0 25px;
-    }
-    
-    .food-grid {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-    
-    .food-card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      cursor: pointer;
-      transition: all 0.4s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .food-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-    }
-    
-    .food-name {
-      font-size: 26px;
-      color: #8B0000;
-      margin-bottom: 12px;
-      font-weight: bold;
-    }
-    
-    .food-description {
-      color: #666;
-      margin-bottom: 15px;
-      line-height: 1.5;
-    }
-    
-    .food-price {
-      font-size: 24px;
-      color: #FF6347;
-      font-weight: bold;
-    }
-    
-    .rating-display {
-      margin-top: 10px;
-      font-size: 18px;
-    }
-    
-    .cart-float {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 65px;
-      height: 65px;
-      background: linear-gradient(45deg, #FFD700, #FF6347);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s;
-      z-index: 100;
-    }
-    
-    .cart-float:hover {
-      transform: scale(1.1) rotate(10deg);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    
-    #cartCount {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: #DC143C;
-      color: white;
-      border-radius: 50%;
-      width: 25px;
-      height: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 12px;
-    }
-
-    /* TOAST CONTAINER - THÊM VÀO ĐÂY */
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 10000;
-    }
-
-    .toast {
-      background: #333;
-      color: white;
-      padding: 15px 20px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-
-    .toast.show {
-      display: block;
-    }
-
-    .toast-success {
-      background: #4caf50;
-    }
-
-    .toast-error {
-      background: #f44336;
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- TOAST CONTAINER - THÊM VÀO ĐÂY -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- NỀN HOẠ TIẾT VÀ HOA RƠI -->
+  <!-- Background -->
   <div class="tet-background"></div>
   <div class="flower-container" id="flowerContainer"></div>
 
-  <!-- PHẦN CHỌN BÀN -->
+  <!-- Auth Modal -->
   <div class="auth-container" id="authContainer">
     <div class="auth-box">
-      <h1>🎊 TÂN NIÊN Ý</h1>
-      <p>Vui lòng chọn số bàn của bạn:</p>
-      <select id="tableSelect">
-        <option value="">-- Chọn bàn --</option>
-        <option value="B01">Bàn 01</option>
-        <option value="B02">Bàn 02</option>
-        <option value="B03">Bàn 03</option>
-        <option value="B04">Bàn 04</option>
-        <option value="B05">Bàn 05</option>
-      </select>
+      <div class="auth-logo">🎊</div>
+      <h1>TÂN NIÊN Ý</h1>
+      <p class="auth-subtitle">Vui lòng chọn số bàn</p>
+      <div class="select-wrapper">
+        <select id="tableSelect">
+          <option value="">-- Chọn bàn --</option>
+          <option value="B01">Bàn 01</option>
+          <option value="B02">Bàn 02</option>
+          <option value="B03">Bàn 03</option>
+          <option value="B04">Bàn 04</option>
+          <option value="B05">Bàn 05</option>
+        </select>
+      </div>
       <button id="startBtn">BẮT ĐẦU GỌI MÓN</button>
     </div>
   </div>
 
-  <!-- PHẦN MENU CHÍNH -->
+  <!-- Main Content -->
   <div class="main-content" id="mainContent">
+    <!-- Header -->
     <header class="header">
-      <h1 class="restaurant-name">Tân Niên Ý</h1>
-      <div class="customer-info" id="customerInfo"></div>
+      <div class="header-content">
+        <h1 class="restaurant-name">
+          <span class="flower-deco left">🌸</span>
+          Tân Niên Ý
+          <span class="flower-deco right">🌸</span>
+        </h1>
+        <div class="customer-info" id="customerInfo">
+          <span class="table-badge">Bàn: <span id="tableNum">--</span></span>
+        </div>
+      </div>
     </header>
 
-    <!-- SỬA: Container trống để main.js render động -->
-    <div class="menu-container" id="menuContainer"></div>
+    <!-- Menu Container -->
+    <div class="menu-container" id="menuContainer">
+      <!-- Categories will be rendered here -->
+    </div>
 
-    <!-- GIỎ HÀNG FLOATING -->
-    <div class="cart-float" id="cartFloat">
-      <span id="cartCount">0</span>
-      <span style="font-size: 24px;">🛒</span>
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav" id="mobileNav">
+      <button class="nav-btn active" data-section="menu">
+        <span class="nav-icon">🍽️</span>
+        <span class="nav-label">Thực đơn</span>
+      </button>
+      <button class="nav-btn" id="cartBtnMobile">
+        <span class="nav-icon">🛒</span>
+        <span class="nav-label">Giỏ hàng</span>
+        <span class="nav-badge" id="cartCountMobile">0</span>
+      </button>
+    </nav>
+
+    <!-- Desktop Floating Cart -->
+    <div class="cart-float desktop-only" id="cartFloat">
+      <span class="cart-icon">🛒</span>
+      <span class="cart-count" id="cartCount">0</span>
     </div>
   </div>
 
