@@ -2,362 +2,316 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Chi tiết món ăn - Tân Niên Ý</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #8B0000 0%, #DC143C 40%, #FF6347 100%);
-      min-height: 100vh;
-      padding: 20px;
-      overflow-x: hidden;
-    }
-    
     .detail-container {
-      max-width: 1000px;
+      max-width: 800px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 25px;
-      overflow: hidden;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-      backdrop-filter: blur(10px);
+      padding: 16px;
+      min-height: 100vh;
+      background: rgba(255,255,255,0.98);
+      border-radius: var(--radius-lg);
+      margin-top: 20px;
+      margin-bottom: 100px;
+      box-shadow: var(--shadow-lg);
     }
-    
-    .detail-header {
-      background: linear-gradient(45deg, #FFD700, #FF6347);
-      padding: 25px;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    
+
     .back-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 24px;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.5);
-      border-radius: 25px;
+      padding: 12px 20px;
+      background: var(--primary-red);
       color: white;
       text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    .back-btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateX(-8px) scale(1.05);
-    }
-    
-    .detail-body {
-      padding: 50px;
-    }
-    
-    /* THÔNG TIN MÓN */
-    .food-info-section {
-      text-align: center;
-      margin-bottom: 50px;
-      padding-bottom: 40px;
-      border-bottom: 2px solid rgba(255,215,0,0.3);
-    }
-    
-    .food-icon {
-      font-size: 100px;
-      margin-bottom: 25px;
-      display: block;
-      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
-    }
-    
-    .food-detail-name {
-      font-size: 42px;
-      color: #8B0000;
-      font-weight: 900;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-      letter-spacing: -0.5px;
-    }
-    
-    .food-detail-description {
-      font-size: 20px;
-      color: #555;
-      line-height: 1.8;
-      margin-bottom: 25px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    
-    .food-detail-price {
-      font-size: 36px;
-      color: #FF6347;
-      font-weight: 900;
-      background: linear-gradient(45deg, rgba(255,215,0,0.25), rgba(255,99,71,0.25));
-      display: inline-block;
-      padding: 15px 40px;
-      border-radius: 30px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    /* ĐÁNH GIÁ */
-    .rating-section {
-      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,99,71,0.15));
-      padding: 40px;
-      border-radius: 25px;
-      margin-bottom: 40px;
-      border: 2px solid rgba(255,215,0,0.4);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-    
-    .rating-title {
-      font-size: 28px;
-      color: #8B0000;
-      margin-bottom: 25px;
-      text-align: center;
+      border-radius: var(--radius-md);
       font-weight: 700;
-    }
-    
-    .stars-container {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
       margin-bottom: 20px;
-    }
-    
-    .star {
-      font-size: 50px;
+      transition: var(--transition);
+      border: none;
       cursor: pointer;
-      color: #ddd;
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      text-shadow: 0 0 5px rgba(0,0,0,0.1);
-      user-select: none;
-    }
-    
-    .star:hover {
-      transform: scale(1.3) rotate(10deg);
-      color: rgba(255,215,0,0.8);
-    }
-    
-    .star.active {
-      color: #FFD700;
-      text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
-      animation: starPulse 1s ease-in-out infinite alternate;
-    }
-    
-    @keyframes starPulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.1); }
-    }
-    
-    .star:disabled {
-      cursor: not-allowed;
-    }
-    
-    #ratingStatus {
-      text-align: center;
-      font-size: 18px;
-      color: #666;
-      font-weight: 600;
-      margin-top: 15px;
-    }
-    
-    /* THỐNG KÊ */
-    .stats-section {
-      background: linear-gradient(135deg, rgba(139,0,0,0.05), rgba(220,20,60,0.05));
-      padding: 30px;
-      border-radius: 20px;
-      margin-bottom: 40px;
-      border: 2px solid rgba(255,215,0,0.3);
-    }
-    
-    .stats-section h3 {
-      color: #8B0000;
-      font-size: 24px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-    
-    .stat-item {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      border: 1px solid rgba(255,215,0,0.3);
-      transition: transform 0.3s;
-    }
-    
-    .stat-item:hover {
-      transform: translateY(-5px);
-    }
-    
-    .stat-value {
-      font-size: 28px;
-      font-weight: 900;
-      color: #FF6347;
-      display: block;
-    }
-    
-    .stat-label {
       font-size: 16px;
-      color: #666;
-      margin-top: 8px;
     }
-    
-    /* ĐẶT HÀNG */
-    .order-section {
-      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,99,71,0.15));
-      padding: 40px;
-      border-radius: 25px;
-      border: 2px solid rgba(255,215,0,0.4);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+
+    .back-btn:hover {
+      background: #6b0000;
+      transform: translateX(-4px);
     }
-    
-    .order-title {
-      font-size: 28px;
-      color: #8B0000;
-      margin-bottom: 25px;
-      text-align: center;
-      font-weight: 700;
+
+    .food-image-container {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 24px;
+      position: relative;
+      box-shadow: var(--shadow-md);
     }
-    
-    .quantity-control {
+
+    .food-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .food-image:hover {
+      transform: scale(1.05);
+    }
+
+    .food-image-placeholder {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
-      margin-bottom: 25px;
+      font-size: 80px;
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-gold));
     }
-    
-    .quantity-label {
-      font-size: 20px;
-      color: #666;
-      font-weight: 600;
+
+    .detail-content {
+      padding: 0 8px;
     }
-    
-    #quantity {
-      width: 100px;
-      padding: 12px;
-      font-size: 20px;
-      border: 2px solid #FFD700;
-      border-radius: 12px;
-      text-align: center;
-      font-weight: bold;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+
+    .detail-name {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(28px, 6vw, 42px);
+      color: var(--primary-red);
+      margin-bottom: 12px;
     }
-    
-    .add-to-cart-btn {
-      width: 100%;
+
+    .detail-description {
+      font-size: clamp(15px, 4vw, 18px);
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .detail-price-box {
+      background: linear-gradient(135deg, #fff9e6, #fff0cc);
+      border: 2px solid var(--primary-gold);
+      border-radius: var(--radius-md);
       padding: 20px;
-      font-size: 24px;
-      background: linear-gradient(45deg, #FFD700, #FF6347);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .detail-price {
+      font-size: clamp(32px, 8vw, 48px);
+      font-weight: 800;
+      color: var(--primary-orange);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-orange));
       color: white;
       border: none;
-      border-radius: 20px;
+      border-radius: var(--radius-md);
+      font-size: 18px;
+      font-weight: 700;
       cursor: pointer;
-      font-weight: 900;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      letter-spacing: 1px;
+      transition: var(--bounce);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    
-    .add-to-cart-btn:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
-    
-    .add-to-cart-btn:active {
-      transform: translateY(0) scale(0.98);
-    }
-    
-    /* NỀN ĐỘNG */
-    .tet-background {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: -2;
-    }
-    
-    .flower {
-      position: fixed;
-      top: -20px;
-      font-size: 30px;
-      animation: fall linear infinite;
-      pointer-events: none;
-      z-index: -1;
-    }
-    
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(360deg);
+
+    @media (min-width: 768px) {
+      .detail-container {
+        margin-top: 40px;
+        padding: 40px;
       }
     }
-    
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .detail-body {
-        padding: 30px;
-      }
-      
-      .food-detail-name {
-        font-size: 32px;
-      }
-      
-      .food-detail-price {
-        font-size: 28px;
-      }
-      
-      .star {
-        font-size: 40px;
+
+    @media (max-width: 480px) {
+      .detail-container {
+        margin-top: 0;
+        border-radius: 0;
       }
     }
   </style>
 </head>
 <body>
   <div class="tet-background"></div>
+  <div class="flower-container" id="flowerContainer"></div>
   
+  <div class="toast-container" id="toastContainer"></div>
+
   <div class="detail-container">
-    <div class="detail-header">
-      <a href="index.html" class="back-btn">← Quay lại</a>
-      <h2 style="margin: 0;">Chi tiết món ăn</h2>
+    <button class="back-btn" onclick="history.back()">
+      ← Quay lại
+    </button>
+
+    <div class="food-image-container" id="imageContainer">
+      <div class="food-image-placeholder" id="imagePlaceholder" style="display: none;">🍽️</div>
+      <img class="food-image" id="foodImage" style="display: none;" alt="Món ăn">
     </div>
-    
-    <div class="detail-body">
-      <!-- NƠI JS SẼ RENDER NỘI DUNG -->
-      <div id="foodDetail"></div>
+
+    <div class="detail-content">
+      <h1 class="detail-name" id="foodName">Đang tải...</h1>
+      <p class="detail-description" id="foodDescription">Vui lòng đợi...</p>
+      
+      <div class="detail-price-box">
+        <div class="detail-price" id="foodPrice">0đ</div>
+        <div style="font-size: 14px; color: #666; margin-top: 4px;">Giá đã bao gồm VAT</div>
+      </div>
+
+      <button class="btn-primary" id="addToCartBtn">
+        <span>🛒</span>
+        <span>Thêm vào giỏ hàng</span>
+      </button>
     </div>
   </div>
 
-  <script type="module" src="detail.js"></script>
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button class="nav-btn" onclick="location.href='index.html'">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Trang chủ</span>
+    </button>
+    <button class="nav-btn" onclick="location.href='cart.html'">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Giỏ hàng</span>
+      <span class="nav-badge" id="cartCountMobile" style="display: none;">0</span>
+    </button>
+  </nav>
 
-  <script>
-    // Thêm hiệu ứng hoa rơi (Tết)
-    const flowers = ['🌸', '🌺', '🌼', '🌷', '🌹'];
-    for (let i = 0; i < 15; i++) {
-      setTimeout(() => {
+  <script type="module">
+    import { db, showToast } from './firebase-config.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const foodId = urlParams.get('id');
+
+    if (!foodId) {
+      showToast('Không tìm thấy món ăn!', 'error');
+      setTimeout(() => location.href = 'index.html', 2000);
+    }
+
+    let currentFood = null;
+
+    async function loadFoodDetail() {
+      try {
+        const docRef = doc(db, 'foodData', foodId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          showToast('Món ăn không tồn tại!', 'error');
+          return;
+        }
+
+        currentFood = { id: docSnap.id, ...docSnap.data() };
+        
+        // Cập nhật thông tin
+        document.getElementById('foodName').textContent = currentFood.name;
+        document.getElementById('foodDescription').textContent = 
+          currentFood.description || 'Món ăn đặc sắc của nhà hàng Tân Niên Ý';
+        document.getElementById('foodPrice').textContent = 
+          currentFood.price?.toLocaleString() + 'đ';
+        document.title = `${currentFood.name} - Tân Niên Ý`;
+
+        // Xử lý ảnh - CHỈ DÙNG imageURL
+        const imgElement = document.getElementById('foodImage');
+        const placeholder = document.getElementById('imagePlaceholder');
+        
+        // Lấy đường dẫn ảnh từ imageURL (vì bạn dùng field này)
+        const imagePath = currentFood.imageURL;
+        
+        if (imagePath && imagePath.trim() !== '') {
+          // Ảnh cùng thư mục nên chỉ cần tên file
+          imgElement.src = imagePath;
+          imgElement.style.display = 'block';
+          placeholder.style.display = 'none';
+          
+          // Nếu ảnh lỗi -> hiện emoji
+          imgElement.onerror = () => {
+            imgElement.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholder.textContent = currentFood.icon || '🍽️';
+          };
+        } else {
+          // Không có imageURL -> hiện emoji
+          imgElement.style.display = 'none';
+          placeholder.style.display = 'flex';
+          placeholder.textContent = currentFood.icon || '🍽️';
+        }
+
+      } catch (error) {
+        console.error("Lỗi:", error);
+        showToast('Không thể tải thông tin món ăn', 'error');
+      }
+    }
+
+    // Thêm vào giỏ
+    document.getElementById('addToCartBtn').addEventListener('click', () => {
+      if (!currentFood) return;
+      
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find(item => item.id === foodId);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({
+          id: foodId,
+          name: currentFood.name,
+          price: currentFood.price,
+          quantity: 1,
+          image: currentFood.imageURL || currentFood.icon // Lưu ảnh vào giỏ để hiện ở cart.html
+        });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+      showToast(`Đã thêm ${currentFood.name} vào giỏ!`, 'success');
+    });
+
+    function updateCartCount() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cartCountMobile');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+
+    // Hiệu ứng hoa rơi
+    function createFlowers() {
+      const container = document.getElementById('flowerContainer');
+      if (!container) return;
+      
+      const flowers = ['🌸', '🌺', '🌼'];
+      setInterval(() => {
+        if (container.children.length >= 8) return;
         const flower = document.createElement('div');
         flower.className = 'flower';
         flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
         flower.style.left = Math.random() * 100 + '%';
         flower.style.animationDuration = (Math.random() * 3 + 5) + 's';
-        flower.style.animationDelay = Math.random() * 2 + 's';
-        flower.style.opacity = Math.random() * 0.6 + 0.4;
-        document.body.appendChild(flower);
-      }, i * 500);
+        container.appendChild(flower);
+        setTimeout(() => flower.remove(), 8000);
+      }, 1200);
     }
+
+    window.addEventListener('load', () => {
+      loadFoodDetail();
+      updateCartCount();
+      createFlowers();
+    });
   </script>
 </body>
 </html>
