@@ -1,5 +1,5 @@
 import { db, customerId, showToast } from './firebase-config.js';
-import { collection, query, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, query, onSnapshot, doc, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 console.log("✅ Đang tải menu Tết...");
 console.log("📌 Customer ID:", customerId);
@@ -361,4 +361,3 @@ window.addEventListener('storage', (e) => {
     updateCartCount();
   }
 });
-
