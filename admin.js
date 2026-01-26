@@ -121,7 +121,7 @@ function renderPendingOrPreparing(status, orders) {
       <div class="order-number">#${order.orderNumber || order.id.slice(-6).toUpperCase()}</div>
       <div class="order-meta">
         🪑 <strong>Bàn:</strong> ${order.tableNumber || 'N/A'} | 
-        🧑 <strong>Khách:</strong> ${order.customerName || 'Khách vãng lai'}
+        🧑 <strong>Khách:</strong> ${order.customerName || 'Khách hàng'}
       </div>
       <div class="order-total">
         <span>💰 ${(order.totalAmount || 0).toLocaleString()}đ</span>
