@@ -16,12 +16,53 @@ async function initCart() {
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
   displayCustomerInfo();
-  toggleCartView();
   
+  // ✅ Đồng bộ với Firebase để lấy imageURL mới nhất
   if (cart.length > 0) {
+    await syncCartWithFirebase();
+    toggleCartView();
     renderCart();
     calculateTotal();
     setupEventListeners();
+  } else {
+    toggleCartView();
+  }
+}
+
+// ============================================
+// ✅ ĐỒNG BỘ GIỎ HÀNG VỚI FIREBASE
+// ============================================
+async function syncCartWithFirebase() {
+  try {
+    // Lấy thông tin mới nhất từ Firebase cho từng món trong giỏ
+    const updatePromises = cart.map(async (item, index) => {
+      if (!item.id) return; // Bỏ qua nếu không có ID
+      
+      const foodRef = doc(db, 'foodData', item.id);
+      const foodSnap = await getDoc(foodRef);
+      
+      if (foodSnap.exists()) {
+        const freshData = foodSnap.data();
+        // Cập nhật item trong mảng cart với dữ liệu từ Firebase
+        cart[index] = {
+          ...item,
+          name: freshData.name || item.name,
+          price: freshData.price || item.price,
+          imageURL: freshData.imageURL || item.imageURL, // Lấy imageURL từ Firebase
+          category: freshData.category || item.category,
+          icon: freshData.icon || item.icon || '🍽️'
+        };
+      }
+    });
+    
+    await Promise.all(updatePromises);
+    
+    // Lưu lại giỏ hàng đã cập nhật vào localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+  } catch (error) {
+    console.error("❌ Lỗi đồng bộ Firebase:", error);
+    // Nếu lỗi, vẫn dùng dữ liệu localStorage cũ
   }
 }
 
@@ -59,39 +100,49 @@ function toggleCartView() {
 }
 
 // ============================================
-// RENDER DANH SÁCH MÓN ĂN
+// RENDER DANH SÁCH MÓN ĂN (ĐÃ SỬA IMAGE)
 // ============================================
 function renderCart() {
   const cartItemsList = document.getElementById('cartItemsList');
   if (!cartItemsList) return;
   
-  cartItemsList.innerHTML = cart.map((item, index) => `
+  cartItemsList.innerHTML = cart.map((item, index) => {
+    // ✅ Lấy imageURL từ Firebase (đã đồng bộ ở trên)
+    const imageUrl = item.imageURL || '';
+    const icon = item.icon || '🍽️';
+    const hasImage = imageUrl && imageUrl.trim() !== '';
+    
+    return `
     <div class="cart-item-card" data-id="${item.id || item.name}">
-      <img src="${item.imageURL || }" 
-           alt="${item.name}" 
-           class="item-image"
-           onerror="this.src=${item.imageURL}">
-      
-      <div class="item-details">
-        <h3>${item.name}</h3>
-        <p>${item.category === 'topping' ? '➕ Topping' : '🍽️ Món chính'}</p>
+      <div class="item-image-wrapper" style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        ${hasImage ? 
+          `<img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size: 40px;\\'>'+'${icon}'+'</span>';">` 
+          : 
+          `<span style="font-size: 40px;">${icon}</span>`
+        }
       </div>
       
-      <div class="quantity-controls">
-        <button class="qty-btn minus" data-index="${index}" aria-label="Giảm số lượng">−</button>
-        <input type="number" value="${item.quantity}" min="1" readonly>
-        <button class="qty-btn plus" data-index="${index}" aria-label="Tăng số lượng">+</button>
+      <div class="item-details" style="flex: 1; margin-left: 12px; min-width: 0;">
+        <h3 style="margin: 0 0 4px 0; color: #8B0000; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
+        <p style="margin: 0; color: #666; font-size: 13px;">${item.category === 'topping' ? '➕ Topping' : '🍽️ Món chính'}</p>
+        <p style="margin: 4px 0 0 0; color: #FF6347; font-size: 14px; font-weight: bold;">${item.price?.toLocaleString('vi-VN')}đ / phần</p>
       </div>
       
-      <div class="item-total-price">
+      <div class="quantity-controls" style="display: flex; align-items: center; gap: 8px; margin: 0 12px;">
+        <button class="qty-btn minus" data-index="${index}" aria-label="Giảm số lượng" style="width: 32px; height: 32px; border: none; background: #f0f0f0; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">−</button>
+        <input type="number" value="${item.quantity}" min="1" readonly style="width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; font-size: 16px;">
+        <button class="qty-btn plus" data-index="${index}" aria-label="Tăng số lượng" style="width: 32px; height: 32px; border: none; background: linear-gradient(135deg, #FFD700, #FF6347); color: white; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">+</button>
+      </div>
+      
+      <div class="item-total-price" style="font-weight: bold; color: #8B0000; font-size: 16px; min-width: 100px; text-align: right;">
         ${(item.price * item.quantity).toLocaleString('vi-VN')}đ
       </div>
       
-      <button class="remove-item-btn" data-index="${index}" aria-label="Xóa món">
+      <button class="remove-item-btn" data-index="${index}" aria-label="Xóa món" style="width: 36px; height: 36px; border: none; background: #ffebee; color: #f44336; border-radius: 50%; cursor: pointer; margin-left: 12px; font-size: 18px; display: flex; align-items: center; justify-content: center;">
         ✕
       </button>
     </div>
-  `).join('');
+  `}).join('');
   
   attachCartItemEvents();
 }
@@ -166,14 +217,13 @@ function saveCart() {
 }
 
 // ============================================
-// ✅ TÍNH TỔNG TIỀN ĐÃ BỎ GIẢM GIÁ
+// TÍNH TỔNG TIỀN
 // ============================================
 function calculateTotal() {
   totalAmount = cart.reduce((sum, item) => {
     return sum + ((item.price || 0) * (item.quantity || 0));
   }, 0);
   
-  // Chỉ hiển thị tổng cộng
   const totalEl = document.getElementById('totalAmount');
   if (totalEl) {
     totalEl.textContent = `${totalAmount.toLocaleString('vi-VN')}đ`;
@@ -181,11 +231,10 @@ function calculateTotal() {
 }
 
 // ============================================
-// GỬI ĐƠN LÊN FIREBASE - ĐÃ SỬA
+// GỬI ĐƠN LÊN FIREBASE
 // ============================================
 async function sendOrderToFirebase(orderData) {
   try {
-    // ✅ SỬA: Tạo orderId an toàn, chỉ lấy số từ tableNumber
     const cleanTableNumber = orderData.tableNumber.replace(/\D/g, '') || '0';
     const orderId = `order_${cleanTableNumber}_${Date.now()}`;
     
@@ -196,7 +245,7 @@ async function sendOrderToFirebase(orderData) {
       status: 'pending',
       createdAt: new Date().toISOString(),
       orderNumber: Date.now().toString().slice(-6),
-      timestamp: Date.now() // ✅ Thêm timestamp để sắp xếp
+      timestamp: Date.now()
     });
     
     // Cập nhật thống kê
@@ -298,9 +347,9 @@ async function handleConfirmOrder() {
         price: item.price,
         quantity: item.quantity,
         category: item.category || 'mon_chinh',
-        imageURL: item.imageURL || ''
+        imageURL: item.imageURL || '' // Gửi kèm imageURL lên Firebase
       })),
-      totalAmount: totalAmount, // ✅ CHỈ CÓ TỔNG TIỀN MÓN
+      totalAmount: totalAmount,
       customerId: customerId,
       createdAt: new Date().toISOString(),
       status: 'pending'
@@ -333,19 +382,15 @@ async function handleConfirmOrder() {
 // GẮN SỰ KIỆN CHO CÁC NÚT
 // ============================================
 function setupEventListeners() {
-  // Nút gửi đơn
   const placeOrderBtn = document.getElementById('placeOrderBtn');
   placeOrderBtn?.addEventListener('click', handlePlaceOrder);
   
-  // Nút xác nhận trong modal
   const confirmBtn = document.getElementById('confirmOrderBtn');
   confirmBtn?.addEventListener('click', handleConfirmOrder);
   
-  // Nút hủy trong modal
   const cancelBtn = document.getElementById('cancelOrderBtn');
   cancelBtn?.addEventListener('click', closeConfirmModal);
   
-  // Đóng modal khi click bên ngoài
   const modal = document.getElementById('confirmModal');
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) {
@@ -358,4 +403,3 @@ function setupEventListeners() {
 // KHỞI CHẠY KHI TRANG ĐƯỢC TẢI
 // ============================================
 document.addEventListener('DOMContentLoaded', initCart);
-
