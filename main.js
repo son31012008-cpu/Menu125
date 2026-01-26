@@ -169,10 +169,37 @@ function renderFoodsByCategory(foods, categories) {
 
 // ========== LOAD RATING ==========
 function loadFoodRating(foodId) {
-  const ratingRef = doc(db, 'foodRatings', foodId);
-  onSnapshot(ratingRef, (ratingDoc) => {
-    const data = ratingDoc.data() || { average: 0, count: 0 };
-    renderStars(`rating-${foodId}`, data.average, data.count);
+  // Query tất cả đánh giá cho món này dựa trên foodId
+  const ratingsRef = collection(db, 'foodRatings');
+  const q = query(ratingsRef, where('foodId', '==', foodId));
+  
+  onSnapshot(q, (snapshot) => {
+    let total = 0;
+    let count = 0;
+    let userRated = false;
+    const currentUserId = localStorage.getItem('customerId') || 'anonymous';
+    
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      total += data.rating || 0;
+      count++;
+      
+      // Kiểm tra user hiện tại đã đánh giá chưa
+      if (data.userId === currentUserId) {
+        userRated = true;
+      }
+    });
+    
+    const average = count > 0 ? (total / count) : 0;
+    
+    // Hiển thị sao
+    renderStars(`rating-${foodId}`, average, count);
+    
+    // Đánh dấu đã đánh giá nếu user hiện tại đã đánh giá
+    const card = document.getElementById(`food-${foodId}`);
+    if (card && userRated) {
+      card.dataset.rated = 'true';
+    }
   });
 }
 
@@ -181,25 +208,20 @@ function renderStars(containerId, average, count) {
   const container = document.getElementById(containerId);
   if (!container) return;
   
-  const avg = average || 0;
-  const fullStars = Math.floor(avg);
-  const hasHalf = avg % 1 >= 0.5;
+  const avg = Math.round(average || 0);
   
   let html = '';
   for (let i = 0; i < 5; i++) {
-    if (i < fullStars) {
-      html += '<span>★</span>';
-    } else if (i === fullStars && hasHalf) {
-      html += '<span style="position: relative; display: inline-block;">★<span style="position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: #ddd;">★</span></span>';
+    if (i < avg) {
+      html += '<span style="color: #FFD700;">★</span>';
     } else {
       html += '<span style="color: #ddd;">★</span>';
     }
   }
   
-  html += `<span class="rating-score">(${count || 0})</span>`;
+  html += `<span class="rating-score" style="color: #666; font-size: 12px; margin-left: 4px;">(${count})</span>`;
   container.innerHTML = html;
 }
-
 // ========== CẬP NHẬT GIỎ HÀNG (Desktop + Mobile) ==========
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -339,3 +361,4 @@ window.addEventListener('storage', (e) => {
     updateCartCount();
   }
 });
+
