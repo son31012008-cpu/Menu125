@@ -67,10 +67,10 @@ function renderCart() {
   
   cartItemsList.innerHTML = cart.map((item, index) => `
     <div class="cart-item-card" data-id="${item.id || item.name}">
-      <img src="${item.imageURL || 'banhtranglui.png'}" 
+      <img src="${item.imageURL || }" 
            alt="${item.name}" 
            class="item-image"
-           onerror="this.src='banhtranglui.png'">
+           onerror="this.src=${item.imageURL}">
       
       <div class="item-details">
         <h3>${item.name}</h3>
@@ -358,3 +358,4 @@ function setupEventListeners() {
 // KHỞI CHẠY KHI TRANG ĐƯỢC TẢI
 // ============================================
 document.addEventListener('DOMContentLoaded', initCart);
+
