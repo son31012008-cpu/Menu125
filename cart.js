@@ -15,9 +15,11 @@ let totalAmount = 0;
 async function initCart() {
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
+  console.log("🛒 Giỏ hàng từ localStorage:", cart);
+  
   displayCustomerInfo();
   
-  // ✅ Đồng bộ với Firebase để lấy imageURL mới nhất
+  // Đồng bộ với Firebase để lấy imageURL mới nhất
   if (cart.length > 0) {
     await syncCartWithFirebase();
     toggleCartView();
@@ -30,28 +32,42 @@ async function initCart() {
 }
 
 // ============================================
-// ✅ ĐỒNG BỘ GIỎ HÀNG VỚI FIREBASE
+// ĐỒNG BỘ GIỎ HÀNG VỚI FIREBASE
 // ============================================
 async function syncCartWithFirebase() {
   try {
+    console.log("🔄 Đang đồng bộ với Firebase...");
+    
     // Lấy thông tin mới nhất từ Firebase cho từng món trong giỏ
     const updatePromises = cart.map(async (item, index) => {
-      if (!item.id) return; // Bỏ qua nếu không có ID
+      // Nếu không có ID thì bỏ qua (không thể fetch từ Firebase)
+      if (!item.id) {
+        console.warn(`⚠️ Món ${item.name} không có ID, dùng dữ liệu local`);
+        return;
+      }
       
-      const foodRef = doc(db, 'foodData', item.id);
-      const foodSnap = await getDoc(foodRef);
-      
-      if (foodSnap.exists()) {
-        const freshData = foodSnap.data();
-        // Cập nhật item trong mảng cart với dữ liệu từ Firebase
-        cart[index] = {
-          ...item,
-          name: freshData.name || item.name,
-          price: freshData.price || item.price,
-          imageURL: freshData.imageURL || item.imageURL, // Lấy imageURL từ Firebase
-          category: freshData.category || item.category,
-          icon: freshData.icon || item.icon || '🍽️'
-        };
+      try {
+        const foodRef = doc(db, 'foodData', item.id);
+        const foodSnap = await getDoc(foodRef);
+        
+        if (foodSnap.exists()) {
+          const freshData = foodSnap.data();
+          console.log(`✅ Lấy dữ liệu từ Firebase cho ${item.id}:`, freshData);
+          
+          // Cập nhật item trong mảng cart với dữ liệu từ Firebase
+          cart[index] = {
+            ...item,
+            name: freshData.name || item.name,
+            price: freshData.price || item.price,
+            imageURL: freshData.imageURL || item.imageURL || item.image, // Ưu tiên imageURL từ Firebase
+            category: freshData.category || item.category,
+            icon: freshData.icon || item.icon || '🍽️'
+          };
+        } else {
+          console.warn(`⚠️ Không tìm thấy món ${item.id} trong Firebase`);
+        }
+      } catch (err) {
+        console.error(`❌ Lỗi fetch món ${item.id}:`, err);
       }
     });
     
@@ -59,10 +75,10 @@ async function syncCartWithFirebase() {
     
     // Lưu lại giỏ hàng đã cập nhật vào localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
+    console.log("💾 Đã lưu giỏ hàng cập nhật:", cart);
     
   } catch (error) {
     console.error("❌ Lỗi đồng bộ Firebase:", error);
-    // Nếu lỗi, vẫn dùng dữ liệu localStorage cũ
   }
 }
 
@@ -100,23 +116,25 @@ function toggleCartView() {
 }
 
 // ============================================
-// RENDER DANH SÁCH MÓN ĂN (ĐÃ SỬA IMAGE)
+// RENDER DANH SÁCH MÓN ĂN
 // ============================================
 function renderCart() {
   const cartItemsList = document.getElementById('cartItemsList');
   if (!cartItemsList) return;
   
   cartItemsList.innerHTML = cart.map((item, index) => {
-    // ✅ Lấy imageURL từ Firebase (đã đồng bộ ở trên)
-    const imageUrl = item.imageURL || '';
+    // ✅ Lấy đường dẫn ảnh: Ưu tiên imageURL (từ Firebase), sau đó đến image (cũ), cuối cùng là rỗng
+    const imageUrl = item.imageURL || item.image || '';
     const icon = item.icon || '🍽️';
     const hasImage = imageUrl && imageUrl.trim() !== '';
+    
+    console.log(`🖼️ Render ${item.name}: imageURL="${imageUrl}", hasImage=${hasImage}`);
     
     return `
     <div class="cart-item-card" data-id="${item.id || item.name}">
       <div class="item-image-wrapper" style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
         ${hasImage ? 
-          `<img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size: 40px;\\'>'+'${icon}'+'</span>';">` 
+          `<img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size: 40px;\\'>'+'${icon}'+'</span>'; console.log('❌ Lỗi load ảnh:', '${imageUrl}')">` 
           : 
           `<span style="font-size: 40px;">${icon}</span>`
         }
@@ -347,7 +365,7 @@ async function handleConfirmOrder() {
         price: item.price,
         quantity: item.quantity,
         category: item.category || 'mon_chinh',
-        imageURL: item.imageURL || '' // Gửi kèm imageURL lên Firebase
+        imageURL: item.imageURL || ''
       })),
       totalAmount: totalAmount,
       customerId: customerId,
@@ -361,13 +379,9 @@ async function handleConfirmOrder() {
     
     showToast('✅ Đơn hàng đã được gửi thành công!', 'success');
     
-    // Xóa giỏ hàng
     localStorage.removeItem('cart');
-    
-    // Đóng modal
     closeConfirmModal();
     
-    // Chuyển về trang chính
     setTimeout(() => {
       window.location.href = 'index.html';
     }, 2000);
