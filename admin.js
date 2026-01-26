@@ -308,3 +308,118 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
+// ============================================
+// HÀM HIỂN THỊ TOAST CẢI TIẾN
+// ============================================
+function showToast(message, type = 'info', title = '') {
+  const container = document.getElementById('toastContainer') || createToastContainer();
+  
+  // Xác định icon và title mặc định theo type
+  const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+  };
+  
+  const titles = {
+    success: 'Thành công',
+    error: 'Lỗi',
+    warning: 'Cảnh báo',
+    info: 'Thông báo'
+  };
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || icons.info}</div>
+    <div class="toast-content">
+      <div class="toast-title">${title || titles[type] || 'Thông báo'}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Tự động xóa sau 3.5 giây
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
+}
+
+// ============================================
+// RENDER CHI TIẾT ĐƠN HÀNG VỚI MÀU SẮC RÕ RÀNG
+// ============================================
+function showOrderDetail(order) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="order-detail-modal">
+      <div class="modal-header">
+        📋 Chi tiết đơn hàng #${order.orderNumber || order.id.slice(-6)}
+      </div>
+      
+      <div class="info-row">
+        <span class="info-label">⏰ Giờ đặt:</span>
+        <span class="info-value" style="color: #333; font-weight: 600;">
+          ${new Date(order.createdAt).toLocaleString('vi-VN')}
+        </span>
+      </div>
+      
+      <div class="info-row">
+        <span class="info-label">🪑 Bàn:</span>
+        <span class="info-value" style="color: #8B0000; font-size: 20px;">
+          ${order.tableNumber}
+        </span>
+      </div>
+      
+      <div class="order-items-list">
+        <h3 style="margin: 0 0 12px 0; color: #333; font-size: 16px;">🍽️ Món đã đặt:</h3>
+        ${order.items.map(item => `
+          <div class="order-item">
+            <span class="item-name">${item.name} x${item.quantity}</span>
+            <span class="item-price">${(item.price * item.quantity).toLocaleString()}đ</span>
+          </div>
+        `).join('')}
+      </div>
+      
+      <div class="total-row">
+        <span class="total-label">💰 TỔNG TIỀN:</span>
+        <span class="total-amount">${order.totalAmount.toLocaleString()}đ</span>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn-cook" onclick="startCooking('${order.id}')">
+          🔥 Bắt đầu nấu
+        </button>
+        <button class="btn-close" onclick="closeModal()">
+          ✕ Đóng
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Đóng khi click ngoài
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+}
+
+function closeModal() {
+  const modal = document.querySelector('.modal-overlay');
+  if (modal) {
+    modal.style.opacity = '0';
+    setTimeout(() => modal.remove(), 300);
+  }
+}
