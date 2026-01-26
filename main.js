@@ -136,9 +136,8 @@ function renderFoodsByCategory(foods, categories) {
             </div>
             <p class="food-description">${food.description || 'Món ăn hấp dẫn'}</p>
             <div class="food-meta">
-              <div class="rating" id="rating-${food.id}">
-                <span>★★★★★</span>
-                <span class="rating-score">(0)</span>
+              <div class="rating" id="rating-${food.id}" style="display: flex; align-items: center;">
+                <!-- Rating sẽ được render vào đây -->
               </div>
               <button class="add-btn" data-id="${food.id}" onclick="event.stopPropagation(); addToCart('${food.id}')">
                 +
@@ -167,61 +166,61 @@ function renderFoodsByCategory(foods, categories) {
   });
 }
 
-// ========== LOAD RATING ==========
+// ========== LOAD RATING (Chỉ hiển thị trung bình + số lượt) ==========
 function loadFoodRating(foodId) {
-  // Query tất cả đánh giá cho món này dựa trên foodId
   const ratingsRef = collection(db, 'foodRatings');
   const q = query(ratingsRef, where('foodId', '==', foodId));
   
   onSnapshot(q, (snapshot) => {
     let total = 0;
     let count = 0;
-    let userRated = false;
-    const currentUserId = localStorage.getItem('customerId') || 'anonymous';
     
     snapshot.docs.forEach(doc => {
       const data = doc.data();
       total += data.rating || 0;
       count++;
-      
-      // Kiểm tra user hiện tại đã đánh giá chưa
-      if (data.userId === currentUserId) {
-        userRated = true;
-      }
     });
     
     const average = count > 0 ? (total / count) : 0;
     
-    // Hiển thị sao
+    // Hiển thị sao trung bình + số lượt
     renderStars(`rating-${foodId}`, average, count);
-    
-    // Đánh dấu đã đánh giá nếu user hiện tại đã đánh giá
-    const card = document.getElementById(`food-${foodId}`);
-    if (card && userRated) {
-      card.dataset.rated = 'true';
-    }
   });
 }
 
-// ========== RENDER SAO ==========
+// ========== RENDER SAO (Chỉ hiển thị, không tương tác) ==========
 function renderStars(containerId, average, count) {
   const container = document.getElementById(containerId);
   if (!container) return;
   
-  const avg = Math.round(average || 0);
+  const avg = Math.round(average);
   
-  let html = '';
-  for (let i = 0; i < 5; i++) {
-    if (i < avg) {
-      html += '<span style="color: #FFD700;">★</span>';
+  // Tạo HTML cho sao vàng và sao xám
+  let starsHtml = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= avg) {
+      // Sao vàng (đã đánh giá)
+      starsHtml += '<span style="color: #FFD700; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">★</span>';
     } else {
-      html += '<span style="color: #ddd;">★</span>';
+      // Sao xám (chưa đánh giá)
+      starsHtml += '<span style="color: #e0e0e0; font-size: 14px;">★</span>';
     }
   }
   
-  html += `<span class="rating-score" style="color: #666; font-size: 12px; margin-left: 4px;">(${count})</span>`;
-  container.innerHTML = html;
+  // Hiển thị: [Sao] (x đánh giá)
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 2px;">
+      ${starsHtml}
+      <span style="color: #888; font-size: 12px; margin-left: 4px; font-weight: 500;">
+        (${count})
+      </span>
+    </div>
+  `;
+  
+  // Thêm tooltip hiển thị điểm trung bình khi hover
+  container.title = `Đánh giá trung bình: ${average.toFixed(1)}/5 sao (${count} lượt đánh giá)`;
 }
+
 // ========== CẬP NHẬT GIỎ HÀNG (Desktop + Mobile) ==========
 function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
