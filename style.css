@@ -242,7 +242,7 @@ body {
   text-align: right;
 }
 
-.food-price::before { content: '💰 '; }
+.food-price::before { content: ''; }
 
 .rating {
   font-size: 16px;
@@ -724,3 +724,4 @@ body {
 @media (min-width: 1200px) {
   html { font-size: 18px; }
 }
+
