@@ -1,5 +1,5 @@
 import { db, doc, getDoc, updateDoc } from './firebase-config.js';
-import { collection, query, where, orderBy, onSnapshot, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, query, where, orderBy, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let currentStatus = 'pending';
 let selectedOrder = null;
@@ -107,8 +107,9 @@ function renderPendingOrPreparing(status, orders) {
   
   if (orders.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:50px; color:white;">
-        <h2>📭 Không có đơn hàng nào</h2>
+      <div class="empty-state">
+        <h2>${status === 'pending' ? '📭 Không có đơn hàng nào' : '🔥 Không có đơn nào đang nấu'}</h2>
+        <p>${status === 'pending' ? 'Đang chờ đơn hàng mới...' : 'Tất cả đơn đã hoàn thành!'}</p>
       </div>
     `;
     return;
@@ -117,15 +118,15 @@ function renderPendingOrPreparing(status, orders) {
   container.innerHTML = orders.map(order => `
     <div class="order-summary-card" onclick="showOrderDetail('${order.id}')">
       <div class="status-badge ${order.status}">${getStatusText(order.status)}</div>
-      <div class="order-number">#${order.orderNumber}</div>
+      <div class="order-number">#${order.orderNumber || order.id.slice(-6).toUpperCase()}</div>
       <div class="order-meta">
-        🪑 <strong>Bàn:</strong> ${order.tableNumber} | 
+        🪑 <strong>Bàn:</strong> ${order.tableNumber || 'N/A'} | 
         🧑 <strong>Khách:</strong> ${order.customerName || 'Khách vãng lai'}
       </div>
       <div class="order-total">
-        💰 ${order.totalAmount.toLocaleString()}đ | 
-        🍽️ ${order.items.length} món | 
-        ⏰ ${new Date(order.timestamp).toLocaleTimeString()}
+        <span>💰 ${(order.totalAmount || 0).toLocaleString()}đ</span>
+        <span>🍽️ ${order.items ? order.items.length : 0} món</span>
+        <span>⏰ ${order.timestamp ? new Date(order.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--'}</span>
       </div>
     </div>
   `).join('');
@@ -135,14 +136,19 @@ function renderCompletedOrders(orders) {
   const tbody = document.getElementById('completed-orders');
   if (!tbody) return;
   
-  tbody.innerHTML = orders.map(order => `
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;">Chưa có đơn hoàn thành</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = orders.map((order, index) => `
     <tr>
-      <td>#${order.orderNumber}</td>
-      <td>${order.tableNumber}</td>
+      <td>#${order.orderNumber || order.id.slice(-6).toUpperCase()}</td>
+      <td>${order.tableNumber || 'N/A'}</td>
       <td>${order.customerName || 'Khách vãng lai'}</td>
-      <td>${order.totalAmount.toLocaleString()}đ</td>
-      <td class="time">${new Date(order.timestamp).toLocaleString()}</td>
-      <td class="time">${order.completedAt ? new Date(order.completedAt).toLocaleString() : '-'}</td>
+      <td style="color: #e74c3c; font-weight: bold;">${(order.totalAmount || 0).toLocaleString()}đ</td>
+      <td class="time">${order.timestamp ? new Date(order.timestamp).toLocaleString('vi-VN') : '-'}</td>
+      <td class="time">${order.completedAt ? new Date(order.completedAt).toLocaleString('vi-VN') : '-'}</td>
     </tr>
   `).join('');
 }
@@ -173,37 +179,49 @@ function renderDetailBox(order) {
   const content = document.getElementById('detailContent');
   const actions = document.getElementById('detailActions');
   
+  // Format items
+  const itemsHtml = order.items && order.items.length > 0 
+    ? order.items.map(item => `
+        <div class="detail-item-row">
+          <span>${item.icon || '🍽️'} ${item.name} <strong>x${item.quantity || 1}</strong></span>
+          <span>${((item.price || 0) * (item.quantity || 1)).toLocaleString()}đ</span>
+        </div>
+      `).join('')
+    : '<div class="detail-item-row"><span>Không có món nào</span><span></span></div>';
+
   content.innerHTML = `
     <div class="detail-grid">
       <div class="detail-item">
-        <strong>🧑 Khách hàng:</strong><br>
-        ${order.customerName || 'Khách vãng lai'}<br>
-        <small>ID: ${order.customerId || 'N/A'}</small>
+        <strong>🧑 Khách hàng</strong>
+        <div style="font-size: 18px; color: #2c3e50;">${order.customerName || 'Khách vãng lai'}</div>
+        <small style="color: #7f8c8d;">ID: ${order.customerId || 'N/A'}</small>
       </div>
       <div class="detail-item">
-        <strong>🪑 Số bàn:</strong><br>
-        ${order.tableNumber}<br>
-        <small>#${order.orderNumber}</small>
+        <strong>🪑 Số bàn</strong>
+        <div style="font-size: 20px; color: #e74c3c; font-weight: bold;">${order.tableNumber || 'N/A'}</div>
+        <small style="color: #7f8c8d;">Đơn #${order.orderNumber || order.id.slice(-6).toUpperCase()}</small>
       </div>
       <div class="detail-item">
-        <strong>⏰ Giờ đặt:</strong><br>
-        ${new Date(order.timestamp).toLocaleString()}
+        <strong>⏰ Giờ đặt</strong>
+        <div style="font-size: 16px;">${order.timestamp ? new Date(order.timestamp).toLocaleString('vi-VN') : '-'}</div>
       </div>
       <div class="detail-item">
-        <strong>💰 Tổng tiền:</strong><br>
-        ${order.totalAmount.toLocaleString()}đ
-      </div>
-      <div class="detail-item full-width">
-        <strong>📋 Chi tiết đơn:</strong>
-        <div class="detail-items" style="margin-top: 10px;">
-          ${order.items.map(item => `
-            <div class="detail-item-row">
-              <span>${item.icon} ${item.name}</span>
-              <span><strong>${item.price.toLocaleString()}đ</strong> x ${item.quantity}</span>
-            </div>
-          `).join('')}
+        <strong>📊 Trạng thái</strong>
+        <div style="font-size: 16px; color: ${getStatusColor(order.status)}; font-weight: bold;">
+          ${getStatusText(order.status)}
         </div>
       </div>
+      <div class="detail-item full-width">
+        <strong>📝 Chi tiết món</strong>
+        <div class="detail-items">
+          ${itemsHtml}
+        </div>
+      </div>
+    </div>
+    
+    <div class="total-section">
+      <span class="total-label">💰 TỔNG TIỀN</span>
+      <span class="total-amount">${(order.totalAmount || 0).toLocaleString()}đ</span>
     </div>
   `;
   
@@ -211,35 +229,41 @@ function renderDetailBox(order) {
   
   overlay.classList.add('show');
   detailBox.classList.add('show');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
 }
 
 function renderDetailActions(order) {
   if (order.status === 'pending') {
     return `
       <button class="btn-action btn-start" onclick="updateOrderStatus('${order.id}', 'preparing')">
-        🔥 Bắt đầu nấu
+        <span>🔥</span> Bắt đầu nấu
       </button>
       <button class="btn-action btn-back" onclick="closeDetailBox()">
-        ↩️ Đóng
+        <span>✕</span> Đóng
       </button>
     `;
   } else if (order.status === 'preparing') {
     return `
       <button class="btn-action btn-finish" onclick="updateOrderStatus('${order.id}', 'completed')">
-        ✅ Hoàn thành
+        <span>✓</span> Hoàn thành
       </button>
       <button class="btn-action btn-back" onclick="closeDetailBox()">
-        ↩️ Đóng
+        <span>✕</span> Đóng
       </button>
     `;
   }
   
-  return '';
+  return `
+    <button class="btn-action btn-back" onclick="closeDetailBox()">
+      <span>←</span> Quay lại
+    </button>
+  `;
 }
 
 window.closeDetailBox = function() {
   document.getElementById('detailOverlay').classList.remove('show');
   document.getElementById('orderDetailBox').classList.remove('show');
+  document.body.style.overflow = ''; // Restore scrolling
 }
 
 window.updateOrderStatus = function(orderId, status) {
@@ -251,10 +275,16 @@ window.updateOrderStatus = function(orderId, status) {
   
   if (status === 'completed') {
     updateData.completedAt = new Date().toISOString();
+  } else if (status === 'preparing') {
+    updateData.startedAt = new Date().toISOString();
   }
   
   updateDoc(orderRef, updateData).then(() => {
-    showToast('Cập nhật thành công!', 'success');
+    const messages = {
+      preparing: '🔥 Đã bắt đầu nấu món!',
+      completed: '✅ Đơn hàng hoàn thành!'
+    };
+    showToast(messages[status] || 'Cập nhật thành công!', 'success');
     closeDetailBox();
   }).catch(error => {
     console.error("❌ Lỗi:", error);
@@ -285,31 +315,17 @@ function getStatusText(status) {
   return statuses[status] || status;
 }
 
+function getStatusColor(status) {
+  const colors = {
+    pending: '#e74c3c',
+    preparing: '#f39c12',
+    completed: '#27ae60'
+  };
+  return colors[status] || '#333';
+}
+
 // ============================================
 // SHOW TOAST
-// ============================================
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toastContainer') || (() => {
-    const c = document.createElement('div');
-    c.id = 'toastContainer';
-    c.className = 'toast-container';
-    document.body.appendChild(c);
-    return c;
-  })();
-  
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-// ============================================
-// HÀM HIỂN THỊ TOAST CẢI TIẾN
 // ============================================
 function showToast(message, type = 'info', title = '') {
   const container = document.getElementById('toastContainer') || createToastContainer();
@@ -343,7 +359,7 @@ function showToast(message, type = 'info', title = '') {
   
   // Tự động xóa sau 3.5 giây
   setTimeout(() => {
-    toast.style.animation = 'fadeOut 0.3s ease forwards';
+    toast.style.animation = 'slideIn 0.3s ease reverse forwards';
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
@@ -354,72 +370,4 @@ function createToastContainer() {
   container.className = 'toast-container';
   document.body.appendChild(container);
   return container;
-}
-
-// ============================================
-// RENDER CHI TIẾT ĐƠN HÀNG VỚI MÀU SẮC RÕ RÀNG
-// ============================================
-function showOrderDetail(order) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="order-detail-modal">
-      <div class="modal-header">
-        📋 Chi tiết đơn hàng #${order.orderNumber || order.id.slice(-6)}
-      </div>
-      
-      <div class="info-row">
-        <span class="info-label">⏰ Giờ đặt:</span>
-        <span class="info-value" style="color: #333; font-weight: 600;">
-          ${new Date(order.createdAt).toLocaleString('vi-VN')}
-        </span>
-      </div>
-      
-      <div class="info-row">
-        <span class="info-label">🪑 Bàn:</span>
-        <span class="info-value" style="color: #8B0000; font-size: 20px;">
-          ${order.tableNumber}
-        </span>
-      </div>
-      
-      <div class="order-items-list">
-        <h3 style="margin: 0 0 12px 0; color: #333; font-size: 16px;">🍽️ Món đã đặt:</h3>
-        ${order.items.map(item => `
-          <div class="order-item">
-            <span class="item-name">${item.name} x${item.quantity}</span>
-            <span class="item-price">${(item.price * item.quantity).toLocaleString()}đ</span>
-          </div>
-        `).join('')}
-      </div>
-      
-      <div class="total-row">
-        <span class="total-label">💰 TỔNG TIỀN:</span>
-        <span class="total-amount">${order.totalAmount.toLocaleString()}đ</span>
-      </div>
-      
-      <div class="action-buttons">
-        <button class="btn-cook" onclick="startCooking('${order.id}')">
-          🔥 Bắt đầu nấu
-        </button>
-        <button class="btn-close" onclick="closeModal()">
-          ✕ Đóng
-        </button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  // Đóng khi click ngoài
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-}
-
-function closeModal() {
-  const modal = document.querySelector('.modal-overlay');
-  if (modal) {
-    modal.style.opacity = '0';
-    setTimeout(() => modal.remove(), 300);
-  }
 }
