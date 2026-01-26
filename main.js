@@ -113,10 +113,21 @@ function renderFoodsByCategory(foods, categories) {
     if (categoryFoods.length === 0) {
       foodGrid.innerHTML = '<p style="text-align:center; color:#666; grid-column: 1/-1;">Chưa có món nào.</p>';
     } else {
-      foodGrid.innerHTML = categoryFoods.map(food => `
-        <div class="food-card" data-id="${food.id}" id="food-${food.id}">
+      foodGrid.innerHTML = categoryFoods.map(food => {
+        // Kiểm tra có imageURL không (ảnh cục bộ hoặc URL đầy đủ)
+        const hasImage = food.imageURL && food.imageURL.trim() !== '';
+        
+        return `
+        <div class="food-card" data-id="${food.id}" id="food-${food.id}" data-image="${food.imageURL || ''}" data-icon="${food.icon || '🍽️'}">
           <div class="food-image">
-            <span style="font-size: inherit;">${food.icon || '🍽️'}</span>
+            ${hasImage ? 
+              `<img src="${food.imageURL}" style="width:100%; height:100%; object-fit:cover;" 
+                    alt="${food.name}" 
+                    onerror="this.onerror=null; this.style.display='none'; 
+                            this.parentElement.innerHTML='<span style=\\'font-size:60px;\\'>'+'${food.icon || '🍽️'}'+'</span>';">` 
+              : 
+              `<span style="font-size: 60px;">${food.icon || '🍽️'}</span>`
+            }
           </div>
           <div class="food-info">
             <div class="food-header">
@@ -135,7 +146,7 @@ function renderFoodsByCategory(foods, categories) {
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
     
     section.appendChild(foodGrid);
@@ -209,15 +220,17 @@ function updateCartCount() {
   }
 }
 
-// ========== THÊM VÀO GIỎ (Placeholder) ==========
+// ========== THÊM VÀO GIỎ ==========
 window.addToCart = function(foodId) {
-  // Lấy thông tin món ăn từ DOM hoặc Firebase
   const foodCard = document.getElementById(`food-${foodId}`);
   if (!foodCard) return;
   
   const name = foodCard.querySelector('.food-name')?.textContent || 'Món ăn';
   const priceText = foodCard.querySelector('.food-price')?.textContent || '0';
   const price = parseInt(priceText.replace(/[^\d]/g, ''));
+  
+  // Lấy ảnh từ data attribute
+  const imageUrl = foodCard.dataset.image || foodCard.dataset.icon || '🍽️';
   
   let cart = JSON.parse(localStorage.getItem('cart') || '[]');
   const existingItem = cart.find(item => item.id === foodId);
@@ -229,7 +242,8 @@ window.addToCart = function(foodId) {
       id: foodId,
       name: name,
       price: price,
-      quantity: 1
+      quantity: 1,
+      image: imageUrl // Lưu ảnh vào giỏ hàng
     });
   }
   
@@ -253,7 +267,7 @@ function createFlowers() {
   if (!container) return;
   
   const flowers = ['🌸', '🌺', '🌼', '🌻', '🌹', '🌷', '🍀'];
-  const maxFlowers = window.innerWidth < 768 ? 15 : 25; // Giảm số hoa trên mobile
+  const maxFlowers = window.innerWidth < 768 ? 15 : 25;
   
   setInterval(() => {
     if (container.children.length >= maxFlowers) return;
@@ -293,18 +307,17 @@ function setupEventListeners() {
     });
   }
   
-  // Mobile nav menu button (scroll to top)
+  // Mobile nav menu button
   const menuBtn = document.querySelector('[data-section="menu"]');
   if (menuBtn) {
     menuBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      // Update active state
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       menuBtn.classList.add('active');
     });
   }
   
-  // Mobile nav contact button (có thể thay bằng modal hoặc scroll)
+  // Mobile nav contact button
   const contactBtn = document.querySelector('[data-section="contact"]');
   if (contactBtn) {
     contactBtn.addEventListener('click', () => {
@@ -320,7 +333,7 @@ window.addEventListener('load', () => {
   setupEventListeners();
 });
 
-// Update cart khi storage thay đổi (nếu mở nhiều tab)
+// Update cart khi storage thay đổi
 window.addEventListener('storage', (e) => {
   if (e.key === 'cart') {
     updateCartCount();
