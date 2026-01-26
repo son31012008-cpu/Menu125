@@ -15,7 +15,7 @@ let totalAmount = 0;
 async function initCart() {
   cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
-  console.log("🛒 Giỏ hàng từ localStorage:", cart);
+  console.log("🛒 Giỏ hàng ban đầu:", JSON.stringify(cart, null, 2));
   
   displayCustomerInfo();
   
@@ -39,11 +39,12 @@ async function syncCartWithFirebase() {
     console.log("🔄 Đang đồng bộ với Firebase...");
     
     // Lấy thông tin mới nhất từ Firebase cho từng món trong giỏ
-    const updatePromises = cart.map(async (item, index) => {
-      // Nếu không có ID thì bỏ qua (không thể fetch từ Firebase)
+    for (let i = 0; i < cart.length; i++) {
+      const item = cart[i];
+      
       if (!item.id) {
-        console.warn(`⚠️ Món ${item.name} không có ID, dùng dữ liệu local`);
-        return;
+        console.warn(`⚠️ Món ${item.name} không có ID, bỏ qua`);
+        continue;
       }
       
       try {
@@ -52,30 +53,30 @@ async function syncCartWithFirebase() {
         
         if (foodSnap.exists()) {
           const freshData = foodSnap.data();
-          console.log(`✅ Lấy dữ liệu từ Firebase cho ${item.id}:`, freshData);
+          console.log(`✅ Firebase trả về cho ${item.id}:`, freshData);
           
-          // Cập nhật item trong mảng cart với dữ liệu từ Firebase
-          cart[index] = {
+          // Cập nhật item - QUAN TRỌNG: Lấy imageURL từ Firebase
+          cart[i] = {
             ...item,
             name: freshData.name || item.name,
             price: freshData.price || item.price,
-            imageURL: freshData.imageURL || item.imageURL || item.image, // Ưu tiên imageURL từ Firebase
+            imageURL: freshData.imageURL || '', // Lấy ảnh từ Firebase
             category: freshData.category || item.category,
-            icon: freshData.icon || item.icon || '🍽️'
+            icon: freshData.icon || '🍽️'
           };
+          
+          console.log(`🖼️ Đã cập nhật imageURL cho ${cart[i].name}: "${cart[i].imageURL}"`);
         } else {
           console.warn(`⚠️ Không tìm thấy món ${item.id} trong Firebase`);
         }
       } catch (err) {
         console.error(`❌ Lỗi fetch món ${item.id}:`, err);
       }
-    });
+    }
     
-    await Promise.all(updatePromises);
-    
-    // Lưu lại giỏ hàng đã cập nhật vào localStorage
+    // Lưu lại giỏ hàng đã cập nhật
     localStorage.setItem('cart', JSON.stringify(cart));
-    console.log("💾 Đã lưu giỏ hàng cập nhật:", cart);
+    console.log("💾 Giỏ hàng sau khi cập nhật:", cart);
     
   } catch (error) {
     console.error("❌ Lỗi đồng bộ Firebase:", error);
@@ -116,34 +117,48 @@ function toggleCartView() {
 }
 
 // ============================================
-// RENDER DANH SÁCH MÓN ĂN
+// RENDER DANH SÁCH MÓN ĂN - ĐÃ FIX LỖI ẢNH
 // ============================================
 function renderCart() {
   const cartItemsList = document.getElementById('cartItemsList');
-  if (!cartItemsList) return;
+  if (!cartItemsList) {
+    console.error("❌ Không tìm thấy #cartItemsList");
+    return;
+  }
+  
+  console.log("🎨 Bắt đầu render giỏ hàng...");
   
   cartItemsList.innerHTML = cart.map((item, index) => {
-    // ✅ Lấy đường dẫn ảnh: Ưu tiên imageURL (từ Firebase), sau đó đến image (cũ), cuối cùng là rỗng
-    const imageUrl = item.imageURL || item.image || '';
-    const icon = item.icon || '🍽️';
+    // Lấy đường dẫn ảnh - Ưu tiên imageURL từ Firebase
+    const imageUrl = item.imageURL || '';
     const hasImage = imageUrl && imageUrl.trim() !== '';
     
-    console.log(`🖼️ Render ${item.name}: imageURL="${imageUrl}", hasImage=${hasImage}`);
+    console.log(`📝 Render item ${index}: ${item.name}, imageURL="${imageUrl}", hasImage=${hasImage}`);
+    
+    // Tạo HTML cho ảnh hoặc icon
+    let imageHtml;
+    if (hasImage) {
+      // Có ảnh - dùng thẻ img với đường dẫn từ Firebase
+      imageHtml = `<img src="${imageUrl}" 
+                       alt="${item.name}" 
+                       style="width:100%; height:100%; object-fit:cover; display:block;" 
+                       onerror="this.style.display='none'; 
+                                this.parentElement.innerHTML='<span style=font-size:40px;>${item.icon || '🍽️'}</span>';">`;
+    } else {
+      // Không có ảnh - dùng icon
+      imageHtml = `<span style="font-size: 40px;">${item.icon || '🍽️'}</span>`;
+    }
     
     return `
     <div class="cart-item-card" data-id="${item.id || item.name}">
       <div class="item-image-wrapper" style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-        ${hasImage ? 
-          `<img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size: 40px;\\'>'+'${icon}'+'</span>'; console.log('❌ Lỗi load ảnh:', '${imageUrl}')">` 
-          : 
-          `<span style="font-size: 40px;">${icon}</span>`
-        }
+        ${imageHtml}
       </div>
       
       <div class="item-details" style="flex: 1; margin-left: 12px; min-width: 0;">
         <h3 style="margin: 0 0 4px 0; color: #8B0000; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
         <p style="margin: 0; color: #666; font-size: 13px;">${item.category === 'topping' ? '➕ Topping' : '🍽️ Món chính'}</p>
-        <p style="margin: 4px 0 0 0; color: #FF6347; font-size: 14px; font-weight: bold;">${item.price?.toLocaleString('vi-VN')}đ / phần</p>
+        <p style="margin: 4px 0 0 0; color: #FF6347; font-size: 14px; font-weight: bold;">${(item.price || 0).toLocaleString('vi-VN')}đ / phần</p>
       </div>
       
       <div class="quantity-controls" style="display: flex; align-items: center; gap: 8px; margin: 0 12px;">
@@ -153,7 +168,7 @@ function renderCart() {
       </div>
       
       <div class="item-total-price" style="font-weight: bold; color: #8B0000; font-size: 16px; min-width: 100px; text-align: right;">
-        ${(item.price * item.quantity).toLocaleString('vi-VN')}đ
+        ${((item.price || 0) * item.quantity).toLocaleString('vi-VN')}đ
       </div>
       
       <button class="remove-item-btn" data-index="${index}" aria-label="Xóa món" style="width: 36px; height: 36px; border: none; background: #ffebee; color: #f44336; border-radius: 50%; cursor: pointer; margin-left: 12px; font-size: 18px; display: flex; align-items: center; justify-content: center;">
@@ -162,6 +177,7 @@ function renderCart() {
     </div>
   `}).join('');
   
+  console.log("✅ Đã render xong, gắn sự kiện...");
   attachCartItemEvents();
 }
 
@@ -232,6 +248,7 @@ function removeFromCart(index) {
 // ============================================
 function saveCart() {
   localStorage.setItem('cart', JSON.stringify(cart));
+  console.log("💾 Đã lưu giỏ hàng:", cart);
 }
 
 // ============================================
@@ -311,7 +328,7 @@ function showConfirmModal() {
         ${cart.map(item => `
           <div style="display: flex; justify-content: space-between; padding: 8px 0;">
             <span>${item.name} x${item.quantity}</span>
-            <span>${(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
+            <span>${((item.price || 0) * item.quantity).toLocaleString('vi-VN')}đ</span>
           </div>
         `).join('')}
       </div>
