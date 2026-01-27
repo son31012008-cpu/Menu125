@@ -10,7 +10,396 @@
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Toast Container -->
+  <!-- Toast Container --><!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Menu Tân Niên Ý</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: linear-gradient(to bottom, #8B0000, #DC143C);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(to bottom, rgba(139,0,0,0.95), rgba(139,0,0,0.9));
+      padding: 16px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .header h1 {
+      color: #FFD700;
+      font-size: 28px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Category Section */
+    .category {
+      margin-bottom: 24px;
+    }
+
+    .category-title {
+      color: #FFD700;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-left: 8px;
+      border-left: 4px solid #FFD700;
+    }
+
+    /* Food List Item - Layout mới */
+    .food-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .food-item {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s;
+    }
+
+    .food-item:active {
+      transform: scale(0.98);
+    }
+
+    /* Bên trái: Thông tin món */
+    .food-info {
+      flex: 1;
+      min-width: 0; /* Để text-overflow hoạt động */
+    }
+
+    .food-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #8B0000;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .food-description {
+      font-size: 14px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Bên phải: Giá + Nút thêm */
+    .food-action {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .food-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FF6B35;
+    }
+
+    .btn-add {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFD700, #FF6B35);
+      color: white;
+      border: none;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+    }
+
+    .btn-add:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .btn-add:active {
+      transform: scale(0.95);
+    }
+
+    /* Bottom Nav */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+      z-index: 99;
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #999;
+      position: relative;
+    }
+
+    .nav-btn.active {
+      color: #8B0000;
+    }
+
+    .nav-icon {
+      font-size: 24px;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: -4px;
+      right: calc(50% - 25px);
+      background: #DC143C;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .food-item {
+        padding: 12px;
+      }
+      
+      .food-name {
+        font-size: 16px;
+      }
+      
+      .food-price {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1>🧧 Tân Niên Ý 🧧</h1>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div id="menuContainer">
+      <!-- Menu sẽ được render vào đây bởi JavaScript -->
+      <div style="text-align: center; padding: 40px; color: white;">
+        Đang tải menu...
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav">
+    <a href="index.html" class="nav-btn active">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Thực đơn</span>
+    </a>
+    <a href="cart.html" class="nav-btn">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Giỏ hàng</span>
+      <span class="nav-badge" id="cartBadge">0</span>
+    </a>
+  </nav>
+
+  <!-- Script -->
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // Load menu
+    function loadMenu() {
+      const menuContainer = document.getElementById('menuContainer');
+      
+      const foodsRef = collection(db, 'foodData');
+      const q = query(foodsRef);
+      
+      onSnapshot(q, (snapshot) => {
+        const foods = [];
+        const categories = new Set();
+        
+        snapshot.docs.forEach(doc => {
+          const food = { id: doc.id, ...doc.data() };
+          foods.push(food);
+          if (food.category) categories.add(food.category);
+        });
+        
+        if (categories.size === 0) categories.add('Món chính');
+        
+        renderMenu(foods, Array.from(categories));
+      });
+    }
+
+    function renderMenu(foods, categories) {
+      const container = document.getElementById('menuContainer');
+      container.innerHTML = '';
+      
+      categories.forEach(category => {
+        const section = document.createElement('div');
+        section.className = 'category';
+        
+        const title = document.createElement('h2');
+        title.className = 'category-title';
+        title.textContent = category;
+        section.appendChild(title);
+        
+        const list = document.createElement('div');
+        list.className = 'food-list';
+        
+        const categoryFoods = foods.filter(f => (f.category || 'Món chính') === category);
+        
+        categoryFoods.forEach(food => {
+          const item = document.createElement('div');
+          item.className = 'food-item';
+          item.innerHTML = `
+            <div class="food-info">
+              <div class="food-name">${food.name}</div>
+              <div class="food-description">${food.description || 'Món ngon hấp dẫn'}</div>
+            </div>
+            <div class="food-action">
+              <div class="food-price">${(food.price || 0).toLocaleString()}đ</div>
+              <button class="btn-add" onclick="addToCart('${food.id}', '${food.name}', ${food.price})">+</button>
+            </div>
+          `;
+          
+          // Click vào tên để xem chi tiết
+          item.querySelector('.food-info').addEventListener('click', () => {
+            location.href = `detail.html?id=${food.id}`;
+          });
+          
+          list.appendChild(item);
+        });
+        
+        section.appendChild(list);
+        container.appendChild(section);
+      });
+    }
+
+    // Thêm vào giỏ
+    window.addToCart = function(id, name, price) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existing = cart.find(item => item.id === id);
+      
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          id: id,
+          name: name,
+          price: price,
+          quantity: 1
+        });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartBadge();
+      
+      // Hiển thị toast đơn giản
+      showToast(`Đã thêm ${name}`);
+    };
+
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cartBadge');
+      
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function showToast(message) {
+      // Tạo toast đơn giản
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 14px;
+        z-index: 9999;
+        animation: fadeIn 0.3s;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 2000);
+    }
+
+    // Init
+    loadMenu();
+    updateCartBadge();
+  </script>
+</body>
+</html>
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Background -->
@@ -81,4 +470,5 @@
   <script type="module" src="main.js"></script>
 </body>
 </html>
+
 
