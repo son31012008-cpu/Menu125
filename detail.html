@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Chi tiết món ăn - Tân Niên Ý</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com ">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400 ;700&display=swap" rel="stylesheet">
   <style>
     /* Detail page specific styles - Mobile First */
     .detail-page {
@@ -63,45 +63,6 @@
       max-width: 800px;
       margin: 0 auto;
       padding: 16px;
-    }
-
-    /* Image Container */
-    .detail-image-section {
-      width: 100%;
-      margin-bottom: 20px;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-md);
-      background: white;
-    }
-
-    .detail-image-wrapper {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/10;
-      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
-      overflow: hidden;
-    }
-
-    .detail-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .detail-image:hover {
-      transform: scale(1.05);
-    }
-
-    .detail-image-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 80px;
-      background: linear-gradient(135deg, var(--primary-orange), var(--primary-gold));
     }
 
     /* Content Section */
@@ -223,45 +184,6 @@
       color: white;
     }
 
-    /* Rating Section */
-    .rating-section {
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 2px solid #f0f0f0;
-    }
-
-    .rating-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--primary-red);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .star-rating {
-      display: flex;
-      gap: 8px;
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
-
-    .star {
-      cursor: pointer;
-      color: #ddd;
-      transition: color 0.2s;
-    }
-
-    .star.active {
-      color: var(--primary-gold);
-    }
-
-    .rating-text {
-      font-size: 14px;
-      color: #666;
-    }
-
     /* Mobile Bottom Nav - Giống index.html */
     .mobile-nav {
       position: fixed;
@@ -330,10 +252,6 @@
         margin-top: 20px;
       }
       
-      .detail-image-wrapper {
-        aspect-ratio: 16/9;
-      }
-      
       .food-title {
         font-size: 42px;
       }
@@ -392,14 +310,6 @@
 
   <!-- Main Content -->
   <main class="detail-main">
-    <!-- Image Section -->
-    <div class="detail-image-section">
-      <div class="detail-image-wrapper" id="imageWrapper">
-        <div class="detail-image-placeholder" id="imagePlaceholder" style="display: none;">🍽️</div>
-        <img class="detail-image" id="foodImage" style="display: none;" alt="Món ăn">
-      </div>
-    </div>
-
     <!-- Content -->
     <div class="detail-content">
       <span class="food-category" id="foodCategory">Món chính</span>
@@ -420,8 +330,7 @@
           Xem giỏ hàng →
         </a>
       </div>
-
-      
+    </div>
   </main>
 
   <!-- Mobile Bottom Nav - Giống index.html -->
@@ -439,7 +348,7 @@
 
   <script type="module">
     import { db, showToast } from './firebase-config.js';
-    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js ";
 
     // Lấy ID từ URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -451,7 +360,6 @@
     }
 
     let currentFood = null;
-    let userRating = 0;
 
     // Load chi tiết món ăn
     async function loadFoodDetail() {
@@ -477,26 +385,6 @@
           currentFood.category || 'Món chính';
         document.title = `${currentFood.name} - Tân Niên Ý`;
 
-        // Xử lý hình ảnh
-        const imgElement = document.getElementById('foodImage');
-        const placeholder = document.getElementById('imagePlaceholder');
-        const imageUrl = currentFood.imageURL || currentFood.image || '';
-        
-        if (imageUrl && !imageUrl.match(/^\p{Emoji}/u)) {
-          imgElement.src = imageUrl;
-          imgElement.style.display = 'block';
-          placeholder.style.display = 'none';
-          
-          imgElement.onerror = () => {
-            imgElement.style.display = 'none';
-            placeholder.style.display = 'flex';
-            placeholder.textContent = currentFood.icon || '🍽️';
-          };
-        } else {
-          placeholder.textContent = currentFood.icon || '🍽️';
-          placeholder.style.display = 'flex';
-        }
-
         // Cập nhật số giỏ hàng
         updateCartBadge();
 
@@ -505,32 +393,6 @@
         showToast('Không thể tải thông tin món ăn', 'error');
       }
     }
-
-    // Xử lý đánh giá sao
-    document.querySelectorAll('.star').forEach(star => {
-      star.addEventListener('click', async () => {
-        const value = parseInt(star.dataset.value);
-        userRating = value;
-        
-        // Update UI
-        document.querySelectorAll('.star').forEach((s, i) => {
-          s.classList.toggle('active', i < value);
-        });
-        
-        try {
-          const ratingRef = doc(db, 'foodRatings', foodId);
-          await setDoc(ratingRef, {
-            userId: localStorage.getItem('customerId') || 'anonymous',
-            rating: value,
-            timestamp: new Date()
-          }, { merge: true });
-          
-          showToast('Cảm ơn bạn đã đánh giá!', 'success');
-        } catch (error) {
-          console.error("Lỗi lưu đánh giá:", error);
-        }
-      });
-    });
 
     // Thêm vào giỏ
     document.getElementById('addToCartBtn').addEventListener('click', async () => {
@@ -609,4 +471,3 @@
   </script>
 </body>
 </html>
-
