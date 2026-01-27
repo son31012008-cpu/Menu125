@@ -3,18 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Menu Tân Niên Ý </title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <!-- Toast Container --><!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Menu Tân Niên Ý</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +23,7 @@
       padding-bottom: 100px;
     }
 
-    /* Header */
+    /* Header - UI Tên quán mới (đơn giản, không hoa đào) */
     .header {
       background: linear-gradient(to bottom, rgba(139,0,0,0.95), rgba(139,0,0,0.9));
       padding: 16px;
@@ -51,6 +39,7 @@
       font-size: 28px;
       font-weight: 700;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      letter-spacing: 1px;
     }
 
     /* Container */
@@ -74,7 +63,7 @@
       border-left: 4px solid #FFD700;
     }
 
-    /* Food List Item - Layout mới */
+    /* Food List - Layout ngang: Tên | Giá + Nút */
     .food-list {
       display: flex;
       flex-direction: column;
@@ -90,6 +79,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
+      cursor: pointer;
       transition: transform 0.2s;
     }
 
@@ -97,25 +87,16 @@
       transform: scale(0.98);
     }
 
-    /* Bên trái: Thông tin món */
+    /* Bên trái: Chỉ hiện tên món */
     .food-info {
       flex: 1;
-      min-width: 0; /* Để text-overflow hoạt động */
+      min-width: 0;
     }
 
     .food-name {
       font-size: 18px;
       font-weight: 700;
       color: #8B0000;
-      margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .food-description {
-      font-size: 14px;
-      color: #666;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -184,6 +165,7 @@
       text-decoration: none;
       color: #999;
       position: relative;
+      cursor: pointer;
     }
 
     .nav-btn.active {
@@ -219,7 +201,7 @@
     /* Responsive */
     @media (max-width: 480px) {
       .food-item {
-        padding: 12px;
+        padding: 14px 12px;
       }
       
       .food-name {
@@ -229,19 +211,31 @@
       .food-price {
         font-size: 16px;
       }
+      
+      .btn-add {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Background Animation -->
+  <div class="tet-background"></div>
+  <div class="flower-container" id="flowerContainer"></div>
+
+  <!-- Header (UI mới - đơn giản) -->
   <header class="header">
-    <h1>🧧 Tân Niên Ý 🧧</h1>
+    <h1>TÂN NIÊN Ý</h1>
   </header>
 
   <!-- Main Content -->
   <main class="container">
     <div id="menuContainer">
-      <!-- Menu sẽ được render vào đây bởi JavaScript -->
       <div style="text-align: center; padding: 40px; color: white;">
         Đang tải menu...
       </div>
@@ -254,7 +248,7 @@
       <span class="nav-icon">🏠</span>
       <span class="nav-label">Thực đơn</span>
     </a>
-    <a href="cart.html" class="nav-btn">
+    <a href="cart.html" class="nav-btn" id="cartNavBtn">
       <span class="nav-icon">🛒</span>
       <span class="nav-label">Giỏ hàng</span>
       <span class="nav-badge" id="cartBadge">0</span>
@@ -310,19 +304,19 @@
         categoryFoods.forEach(food => {
           const item = document.createElement('div');
           item.className = 'food-item';
+          // Layout: [Tên món] [Giá] [Nút +]
           item.innerHTML = `
             <div class="food-info">
               <div class="food-name">${food.name}</div>
-              <div class="food-description">${food.description || 'Món ngon hấp dẫn'}</div>
             </div>
             <div class="food-action">
               <div class="food-price">${(food.price || 0).toLocaleString()}đ</div>
-              <button class="btn-add" onclick="addToCart('${food.id}', '${food.name}', ${food.price})">+</button>
+              <button class="btn-add" onclick="event.stopPropagation(); addToCart('${food.id}', '${food.name}', ${food.price})">+</button>
             </div>
           `;
           
-          // Click vào tên để xem chi tiết
-          item.querySelector('.food-info').addEventListener('click', () => {
+          // Click vào item để xem chi tiết
+          item.addEventListener('click', () => {
             location.href = `detail.html?id=${food.id}`;
           });
           
@@ -353,8 +347,24 @@
       localStorage.setItem('cart', JSON.stringify(cart));
       updateCartBadge();
       
-      // Hiển thị toast đơn giản
-      showToast(`Đã thêm ${name}`);
+      // Toast thông báo
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 14px;
+        z-index: 9999;
+      `;
+      toast.textContent = `Đã thêm ${name}`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.remove(), 2000);
     };
 
     function updateCartBadge() {
@@ -370,105 +380,9 @@
       }
     }
 
-    function showToast(message) {
-      // Tạo toast đơn giản
-      const toast = document.createElement('div');
-      toast.style.cssText = `
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 12px 24px;
-        border-radius: 25px;
-        font-size: 14px;
-        z-index: 9999;
-        animation: fadeIn 0.3s;
-      `;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.remove();
-      }, 2000);
-    }
-
     // Init
     loadMenu();
     updateCartBadge();
   </script>
 </body>
 </html>
-  <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Background -->
-  <div class="tet-background"></div>
-  <div class="flower-container" id="flowerContainer"></div>
-
-  <!-- Auth Modal -->
-  <div class="auth-container" id="authContainer">
-    <div class="auth-box">
-      <div class="auth-logo">🎊</div>
-      <h1>TÂN NIÊN Ý</h1>
-      <p class="auth-subtitle">Vui lòng chọn số bàn</p>
-      <div class="select-wrapper">
-        <select id="tableSelect">
-          <option value="">-- Chọn bàn --</option>
-          <option value="B01">Bàn 01</option>
-          <option value="B02">Bàn 02</option>
-          <option value="B03">Bàn 03</option>
-          <option value="B04">Bàn 04</option>
-          <option value="B05">Bàn 05</option>
-        </select>
-      </div>
-      <button id="startBtn">BẮT ĐẦU GỌI MÓN</button>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content" id="mainContent">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <h1 class="restaurant-name">
-          <span class="flower-deco left">🌸</span>
-          Tân Niên Ý
-          <span class="flower-deco right">🌸</span>
-        </h1>
-        <div class="customer-info" id="customerInfo">
-          <span class="table-badge">Bàn: <span id="tableNum">--</span></span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Menu Container -->
-    <div class="menu-container" id="menuContainer">
-      <!-- Categories will be rendered here -->
-    </div>
-
-    <!-- Mobile Bottom Nav -->
-    <nav class="mobile-nav" id="mobileNav">
-      <button class="nav-btn active" data-section="menu">
-        <span class="nav-icon">🍽️</span>
-        <span class="nav-label">Thực đơn</span>
-      </button>
-      <button class="nav-btn" id="cartBtnMobile">
-        <span class="nav-icon">🛒</span>
-        <span class="nav-label">Giỏ hàng</span>
-        <span class="nav-badge" id="cartCountMobile">0</span>
-      </button>
-    </nav>
-
-    <!-- Desktop Floating Cart -->
-    <div class="cart-float desktop-only" id="cartFloat">
-      <span class="cart-icon">🛒</span>
-      <span class="cart-count" id="cartCount">0</span>
-    </div>
-  </div>
-
-  <script type="module" src="main.js"></script>
-</body>
-</html>
-
-
