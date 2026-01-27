@@ -1,5 +1,5 @@
 import { db, customerId, showToast } from './firebase-config.js';
-import { collection, query, onSnapshot, doc, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js ";
 
 console.log("✅ Đang tải menu Tết...");
 console.log("📌 Customer ID:", customerId);
@@ -136,9 +136,6 @@ function renderFoodsByCategory(foods, categories) {
             </div>
             <p class="food-description">${food.description || 'Món ăn hấp dẫn'}</p>
             <div class="food-meta">
-              <div class="rating" id="rating-${food.id}" style="display: flex; align-items: center;">
-                <!-- Rating sẽ được render vào đây -->
-              </div>
               <button class="add-btn" data-id="${food.id}" onclick="event.stopPropagation(); addToCart('${food.id}')">
                 +
               </button>
@@ -161,64 +158,8 @@ function renderFoodsByCategory(foods, categories) {
           location.href = `detail.html?id=${food.id}`;
         });
       }
-      loadFoodRating(food.id);
     });
   });
-}
-
-// ========== LOAD RATING (Chỉ hiển thị trung bình + số lượt) ==========
-function loadFoodRating(foodId) {
-  const ratingsRef = collection(db, 'foodRatings');
-  const q = query(ratingsRef, where('foodId', '==', foodId));
-  
-  onSnapshot(q, (snapshot) => {
-    let total = 0;
-    let count = 0;
-    
-    snapshot.docs.forEach(doc => {
-      const data = doc.data();
-      total += data.rating || 0;
-      count++;
-    });
-    
-    const average = count > 0 ? (total / count) : 0;
-    
-    // Hiển thị sao trung bình + số lượt
-    renderStars(`rating-${foodId}`, average, count);
-  });
-}
-
-// ========== RENDER SAO (Chỉ hiển thị, không tương tác) ==========
-function renderStars(containerId, average, count) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  
-  const avg = Math.round(average);
-  
-  // Tạo HTML cho sao vàng và sao xám
-  let starsHtml = '';
-  for (let i = 1; i <= 5; i++) {
-    if (i <= avg) {
-      // Sao vàng (đã đánh giá)
-      starsHtml += '<span style="color: #FFD700; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">★</span>';
-    } else {
-      // Sao xám (chưa đánh giá)
-      starsHtml += '<span style="color: #e0e0e0; font-size: 14px;">★</span>';
-    }
-  }
-  
-  // Hiển thị: [Sao] (x đánh giá)
-  container.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 2px;">
-      ${starsHtml}
-      <span style="color: #888; font-size: 12px; margin-left: 4px; font-weight: 500;">
-        (${count})
-      </span>
-    </div>
-  `;
-  
-  // Thêm tooltip hiển thị điểm trung bình khi hover
-  container.title = `Đánh giá trung bình: ${average.toFixed(1)}/5 sao (${count} lượt đánh giá)`;
 }
 
 // ========== CẬP NHẬT GIỎ HÀNG (Desktop + Mobile) ==========
