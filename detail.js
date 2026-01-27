@@ -1,4 +1,5 @@
-import { db, customerId, doc, getDoc, showToast } from './firebase-config.js';
+import { db, showToast } from './firebase-config.js';
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // ============================================
 // 1. LẤY ID MÓN ĂN TỪ URL
@@ -76,8 +77,6 @@ function setupCart(food, foodId) {
 const foodRef = doc(db, 'foodData', foodId);
 
 // Load dữ liệu món ăn
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js ";
-
 onSnapshot(foodRef, (doc) => {
   if (!doc.exists()) {
     showToast('Món ăn không tồn tại!', 'error');
